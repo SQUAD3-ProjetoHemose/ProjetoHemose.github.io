@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/apiUser';
+import { useAuth } from '@/lib/authContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>('');

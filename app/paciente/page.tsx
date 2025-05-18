@@ -3,12 +3,8 @@
 import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
 import { usePacientes } from '@/lib/apiPaciente';
-import { User, Paciente } from '@/types';
-
-// Interface para as props do componente
-interface PacienteDashboardPageProps {
-  user: User;
-}
+import { Paciente } from '@/types';
+import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
 
 // Interface para os dados do formulário de novo paciente
 interface NovoPacienteForm {
@@ -19,7 +15,10 @@ interface NovoPacienteForm {
   sinaisVitais: string;
 }
 
-function PacienteDashboardPage({ user }: PacienteDashboardPageProps) {
+function PacienteDashboardPage() {
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuth();
+  
   // Estados para gerenciar os pacientes e o formulário
   const [novoPaciente, setNovoPaciente] = useState<NovoPacienteForm>({
     nome: '',
@@ -176,6 +175,11 @@ function PacienteDashboardPage({ user }: PacienteDashboardPageProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-black">Dashboard de Pacientes</h1>
+      
+      {/* Opcional: mostrar informação do usuário */}
+      {user && (
+        <p className="text-black mb-4">Operador: {user.nome}</p>
+      )}
       
       {error && (
         <div className="bg-red-100 p-4 mb-6 rounded-md">
@@ -343,12 +347,11 @@ function PacienteDashboardPage({ user }: PacienteDashboardPageProps) {
   );
 }
 
-// HOC para proteger a rota, permitindo apenas admin e enfermeira
-export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico']); // Restringe o acesso à página apenas para administradores, enfermeiras e médicos
-
+// HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
+export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico']);
+            
 // 
 //  __  ____ ____ _  _ 
 // / _\/ ___) ___) )( \
 // /    \___ \___ ) \/ (
 // \_/\_(____(____|____/
-//

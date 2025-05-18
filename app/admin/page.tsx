@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
-import { User, Stats } from '@/types';
+import { Stats } from '@/types';
 import { useUsers } from '@/lib/apiUser';
 import { usePacientes } from '@/lib/apiPaciente';
-
-// Interface para as props do componente
-interface AdminDashboardPageProps {
-  user: User;
-}
+import { useAuth } from '@/lib/authContext';
 
 // Interface para atividades recentes
 interface Atividade {
@@ -18,7 +14,10 @@ interface Atividade {
   descricao: string;
 }
 
-function AdminDashboardPage({ user }: AdminDashboardPageProps) {
+function AdminDashboardPage() {
+  // Obter o usuário do contexto de autenticação em vez de props
+  const { user } = useAuth();
+  
   // Estados para armazenar dados dinâmicos
   const [stats, setStats] = useState<Stats>({
     totalMedicos: 0,
@@ -91,6 +90,11 @@ function AdminDashboardPage({ user }: AdminDashboardPageProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-black">Dashboard Administrativo</h1>
+      
+      {/* Opcionalmente, mostrar informação de boas-vindas com o nome do usuário */}
+      {user && (
+        <p className="text-black mb-4">Bem-vindo, {user.nome || user.email}!</p>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">

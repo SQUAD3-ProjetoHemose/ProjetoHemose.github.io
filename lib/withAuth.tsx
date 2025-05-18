@@ -1,31 +1,33 @@
 import React from 'react'; // Importa o React para usar JSX 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useAuth } from './apiUser';
+import { useAuth } from './authContext';
 import { UserRole } from '@/types';
 
+// HOC para proteger rotas com autenticação e autorização de papéis de usuário
 export default function withAuth<P extends object>(
   Component: React.ComponentType<P>,
   allowedRoles: UserRole[] = []
 ) {
+  // Componente wrapper para lógica de autenticação/autorização
   return function AuthComponent(props: P) {
-    const { user, loading } = useAuth();
-    const router = useRouter();
+    const { user, loading } = useAuth(); // Obtém usuário e estado de carregamento do contexto de autenticação
+    const router = useRouter(); // Hook para navegação
 
     useEffect(() => {
       if (!loading && !user) {
-        // User is not authenticated, redirect to login
+        // Usuário não autenticado, redireciona para login
         router.push('/login');
       } else if (!loading && user && allowedRoles.length > 0) {
-        // Check if user has the required role
+        // Verifica se o usuário possui o papel necessário
         if (!allowedRoles.includes(user.tipo)) {
-          // User doesn't have required role, redirect to unauthorized
+          // Usuário não tem permissão, redireciona para não autorizado
           router.push('/unauthorized');
         }
       }
     }, [user, loading, router]);
 
-    // Show nothing while checking auth
+    // Exibe carregando enquanto verifica autenticação
     if (loading || !user) {
       return (
         <div className="flex min-h-screen items-center justify-center">
@@ -37,12 +39,13 @@ export default function withAuth<P extends object>(
       );
     }
 
-    // If allowed roles is empty or user has the required role, render the component
+    // Se não há restrição de papel ou usuário tem permissão, renderiza o componente
     if (allowedRoles.length === 0 || allowedRoles.includes(user.tipo)) {
-      return <Component {...props} user={user} />;
+      // Não passa o user como prop, o componente deve usar useAuth() internamente
+      return <Component {...props} />;
     }
 
-    // Otherwise, show nothing (should never reach here due to redirect)
+    // Caso contrário, não renderiza nada (deve ser redirecionado antes)
     return null;
   };
 }

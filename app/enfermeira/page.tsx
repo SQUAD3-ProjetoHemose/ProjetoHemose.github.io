@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
-import { User, Stats } from '@/types';
-
-interface EnfermeiraDashboardPageProps {
-  user: User;
-}
+import { Stats } from '@/types';
+import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
 
 interface PacienteUrgente {
   id: number | string;
@@ -25,7 +22,10 @@ interface Medicacao {
   horario: string;
 }
 
-function EnfermeiraDashboardPage({ user }: EnfermeiraDashboardPageProps) {
+function EnfermeiraDashboardPage() {
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuth();
+  
   const [stats, setStats] = useState<Stats>({
     pacientesInternados: 0,
     pacientesTriagem: 0,
@@ -62,6 +62,11 @@ function EnfermeiraDashboardPage({ user }: EnfermeiraDashboardPageProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-black">Dashboard de Enfermagem</h1>
+      
+      {/* Opcional: mostrar nome da enfermeira */}
+      {user && (
+        <p className="text-black mb-4">Olá, {user.nome}. Bem-vindo(a)!</p>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">

@@ -1,24 +1,26 @@
 'use client';
 
-import { useAuth } from '@/lib/apiUser';
+import { useAuth } from '@/lib/authContext'; // Importação corrigida do hook useAuth
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User } from '@/types';
 import React from 'react';
 
+// Interface para as props do componente
 interface EnfermeiraLayoutProps {
   children: React.ReactNode;
 }
 
 export default function EnfermeiraLayout({ children }: EnfermeiraLayoutProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); // Obtendo usuário e função de logout do contexto de autenticação
   const pathname = usePathname();
 
+  // Função para realizar logout e redirecionar para a página de login
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
+  // Função para verificar se o link atual está ativo
   const isActive = (path: string): string => {
     return pathname === path ? 'bg-green-800' : '';
   };

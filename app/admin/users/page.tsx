@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUsers } from '@/lib/apiUser';
 import withAuth from '@/lib/withAuth';
 import { User, UserRole } from '@/types';
-
+import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
 
 // Interface para os dados do formulário
 interface FormData {
@@ -15,12 +15,10 @@ interface FormData {
   ativo: boolean;
 }
 
-// Interface para as props do componente
-interface AdminUsersPageProps {
-  user: User;
-}
-
-function AdminUsersPage({ user }: AdminUsersPageProps) {
+function AdminUsersPage() {
+  // Obter o usuário do contexto de autenticação em vez de props
+  const { user } = useAuth();
+  
   const [activeTab, setActiveTab] = useState<'todos' | UserRole>('todos');
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -380,7 +378,7 @@ function AdminUsersPage({ user }: AdminUsersPageProps) {
   );
 }
 
-export default withAuth(AdminUsersPage, ['admin']);
+export default withAuth(AdminUsersPage, ['admin']); // Protege a rota apenas para administradores
             
             
 /* 

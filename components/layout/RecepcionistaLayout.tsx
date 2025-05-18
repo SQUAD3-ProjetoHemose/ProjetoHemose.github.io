@@ -1,19 +1,27 @@
 'use client';
 
-import { useAuth } from '@/lib/apiUser';
+import { useAuth } from '@/lib/authContext'; // Importação corrigida do hook useAuth
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 
-export default function RecepcionistaLayout({ children }) {
-  const { user, logout } = useAuth();
+// Interface para as props do componente
+interface RecepcionistaLayoutProps {
+  children: ReactNode;
+}
+
+export default function RecepcionistaLayout({ children }: RecepcionistaLayoutProps) {
+  const { user, logout } = useAuth(); // Obtendo usuário e função de logout do contexto de autenticação
   const pathname = usePathname();
 
+  // Função para realizar logout e redirecionar para a página de login
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
-  const isActive = (path) => {
+  // Função para verificar se o link atual está ativo
+  const isActive = (path: string): string => {
     return pathname === path ? 'bg-purple-800' : '';
   };
 
@@ -100,3 +108,10 @@ export default function RecepcionistaLayout({ children }) {
     </div>
   );
 }
+            
+/*             
+  __  ____ ____ _  _ 
+ / _\/ ___) ___) )( \
+/    \___ \___ ) \/ (
+\_/\_(____(____|____/
+   */

@@ -2,13 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
-import { User, Stats, FilaEspera } from '@/types';
+import { Stats, FilaEspera } from '@/types';
 import { usePacientes } from '@/lib/apiPaciente';
-
-// Interface para as props do componente
-interface RecepcionistaDashboardPageProps {
-  user: User;
-}
+import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
 
 // Interface para agendamentos futuros
 interface Agendamento {
@@ -20,7 +16,10 @@ interface Agendamento {
   medico: string;
 }
 
-function RecepcionistaDashboardPage({ user }: RecepcionistaDashboardPageProps) {
+function RecepcionistaDashboardPage() {
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuth();
+  
   // Estados para armazenar dados dinâmicos da recepção
   const [stats, setStats] = useState<Stats>({
     pacientesHoje: 0,
@@ -109,6 +108,11 @@ function RecepcionistaDashboardPage({ user }: RecepcionistaDashboardPageProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-black">Dashboard de Recepção</h1>
+      
+      {/* Opcional: mostrar nome do recepcionista */}
+      {user && (
+        <p className="text-black mb-4">Olá, {user.nome}. Bem-vindo(a)!</p>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">

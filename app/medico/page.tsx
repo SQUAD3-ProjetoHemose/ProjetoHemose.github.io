@@ -2,13 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
-import { User, Stats, Atendimento } from '@/types';
+import { Stats, Atendimento } from '@/types';
 import { usePacientes } from '@/lib/apiPaciente';
-
-// Interface para as props do componente
-interface MedicoDashboardPageProps {
-  user: User;
-}
+import { useAuth } from '@/lib/authContext'; // Corrigindo importação do useAuth
 
 // Interface para atividades recentes
 interface AtividadeMedica {
@@ -17,7 +13,10 @@ interface AtividadeMedica {
   descricao: string;
 }
 
-function MedicoDashboardPage({ user }: MedicoDashboardPageProps) {
+function MedicoDashboardPage() {
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuth();
+  
   // Estados para armazenar dados dinâmicos do médico
   const [stats, setStats] = useState<Stats>({
     pacientesHoje: 0,
@@ -87,6 +86,11 @@ function MedicoDashboardPage({ user }: MedicoDashboardPageProps) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-black">Dashboard Médico</h1>
+      
+      {/* Opcional: mostrar nome do médico */}
+      {user && (
+        <p className="text-black mb-4">Bem-vindo(a), Dr(a). {user.nome}</p>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
