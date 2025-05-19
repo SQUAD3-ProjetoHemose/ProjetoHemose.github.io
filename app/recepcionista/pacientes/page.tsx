@@ -348,8 +348,8 @@ function PacienteDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
-export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico']);
-            
+export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico', 'recepcionista']);
+          
 // 
 //  __  ____ ____ _  _ 
 // / _\/ ___) ___) )( \

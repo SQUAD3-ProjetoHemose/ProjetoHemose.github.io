@@ -9,7 +9,7 @@ function PacienteRootLayout({ children }: { children: ReactNode }) {
 } 
 
 // Restringe o acesso ao layout para admin, enfermeira e médico
-export default withAuth(PacienteRootLayout, ['admin', 'enfermeira', 'medico']);
+export default withAuth(PacienteRootLayout, ['admin', 'enfermeira', 'medico', 'recepcionista']);
             
 /*
   __  ____ ____ _  _ 
