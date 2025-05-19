@@ -4,15 +4,18 @@ import { useState, useEffect } from 'react';
 import withAuth from '@/lib/withAuth';
 import { usePacientes } from '@/lib/apiPaciente';
 import { Paciente } from '@/types';
-import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
+import { useAuth } from '@/lib/authContext';
 
 // Interface para os dados do formulário de novo paciente
 interface NovoPacienteForm {
   nome: string;
-  idade: string;
-  leito: string;
-  status: string;
-  sinaisVitais: string;
+  data_nascimento: string;
+  cpf: string;
+  telefone: string;
+  endereco: string;
+  tipo_sanguineo: string;
+  alergias: string;
+  historico_medico: string;
 }
 
 function PacienteDashboardPage() {
@@ -22,10 +25,13 @@ function PacienteDashboardPage() {
   // Estados para gerenciar os pacientes e o formulário
   const [novoPaciente, setNovoPaciente] = useState<NovoPacienteForm>({
     nome: '',
-    idade: '',
-    leito: '',
-    status: 'Em Triagem',
-    sinaisVitais: '',
+    data_nascimento: '',
+    cpf: '',
+    telefone: '',
+    endereco: '',
+    tipo_sanguineo: '',
+    alergias: '',
+    historico_medico: ''
   }); // Estado para o formulário de novo paciente
 
   // Hook personalizado para operações com pacientes
@@ -43,13 +49,26 @@ function PacienteDashboardPage() {
   const [editandoPaciente, setEditandoPaciente] = useState<Paciente | null>(null);
   const [feedback, setFeedback] = useState<{tipo: 'sucesso' | 'erro', mensagem: string} | null>(null);
 
+  // Calcular a idade com base na data de nascimento
+  const calcularIdade = (dataNascimento: string): number => {
+    if (!dataNascimento) return 0;
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const m = hoje.getMonth() - nascimento.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    return idade;
+  };
+
   useEffect(() => {
     // Carrega a lista de pacientes quando o componente é montado
     fetchPacientes();
   }, []); // Array vazio para executar apenas na montagem
 
   // Função para lidar com mudanças nos campos do formulário
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNovoPaciente((prevState) => ({
       ...prevState,
@@ -57,16 +76,49 @@ function PacienteDashboardPage() {
     })); // Atualiza o estado do formulário com os novos valores
   };
 
+  // Função para formatar CPF: 000.000.000-00
+  const formatarCPF = (cpf: string) => {
+    // Remove caracteres não numéricos
+    cpf = cpf.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    cpf = cpf.slice(0, 11);
+    
+    // Formata o CPF
+    if (cpf.length <= 3) {
+      return cpf;
+    } else if (cpf.length <= 6) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    } else if (cpf.length <= 9) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    } else {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+    }
+  };
+
+  // Handler especial para CPF com formatação
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatarCPF(e.target.value);
+    setNovoPaciente(prev => ({
+      ...prev,
+      cpf: formattedValue
+    }));
+  };
+
   // Função para configurar a edição de um paciente
   const iniciarEdicao = (paciente: Paciente) => {
     setEditandoPaciente(paciente);
+    // Adapte os campos conforme necessário
     setNovoPaciente({
       nome: paciente.nome,
-      idade: paciente.idade.toString(),
-      leito: paciente.leito || '',
-      status: paciente.status || 'Em Triagem',
-      sinaisVitais: paciente.sinaisVitais || ''
-    }); // Prepara o formulário com os dados do paciente a ser editado
+      data_nascimento: paciente.dataNascimento || '',
+      cpf: paciente.cpf || '',
+      telefone: paciente.telefone || '',
+      endereco: paciente.endereco || '',
+      tipo_sanguineo: '',
+      alergias: '',
+      historico_medico: ''
+    });
   };
 
   // Função para cancelar edição
@@ -74,24 +126,41 @@ function PacienteDashboardPage() {
     setEditandoPaciente(null);
     setNovoPaciente({
       nome: '',
-      idade: '',
-      leito: '',
-      status: 'Em Triagem',
-      sinaisVitais: ''
-    }); // Limpa o formulário e cancela modo de edição
+      data_nascimento: '',
+      cpf: '',
+      telefone: '',
+      endereco: '',
+      tipo_sanguineo: '',
+      alergias: '',
+      historico_medico: ''
+    });
   };
 
   // Função para cadastrar ou atualizar um paciente
   const handleSalvarPaciente = async () => {
     try {
-      // Converte idade para número antes de enviar
-      const pacienteData: Partial<Paciente> = {
+      // Remover formatação do CPF antes de enviar
+      const cpfLimpo = novoPaciente.cpf.replace(/\D/g, '');
+      
+      // Validar campos obrigatórios
+      if (!novoPaciente.nome || !novoPaciente.data_nascimento || cpfLimpo.length !== 11) {
+        setFeedback({
+          tipo: 'erro',
+          mensagem: 'Preencha os campos obrigatórios corretamente. CPF deve conter 11 dígitos.'
+        });
+        return;
+      }
+
+      const pacienteData = {
         nome: novoPaciente.nome,
-        idade: parseInt(novoPaciente.idade),
-        leito: novoPaciente.leito,
-        status: novoPaciente.status,
-        sinaisVitais: novoPaciente.sinaisVitais
-      }; // Preparando os dados para envio
+        cpf: cpfLimpo,
+        data_nascimento: novoPaciente.data_nascimento, // Formato ISO 8601: YYYY-MM-DD
+        telefone: novoPaciente.telefone,
+        endereco: novoPaciente.endereco,
+        tipo_sanguineo: novoPaciente.tipo_sanguineo,
+        alergias: novoPaciente.alergias,
+        historico_medico: novoPaciente.historico_medico
+      };
 
       if (editandoPaciente) {
         // Atualiza paciente existente
@@ -112,11 +181,14 @@ function PacienteDashboardPage() {
       // Limpa o formulário após o cadastro/edição
       setNovoPaciente({
         nome: '',
-        idade: '',
-        leito: '',
-        status: 'Em Triagem',
-        sinaisVitais: ''
-      }); // Resetando o formulário após sucesso
+        data_nascimento: '',
+        cpf: '',
+        telefone: '',
+        endereco: '',
+        tipo_sanguineo: '',
+        alergias: '',
+        historico_medico: ''
+      });
 
       // Recarrega a lista de pacientes
       await fetchPacientes();
@@ -136,7 +208,7 @@ function PacienteDashboardPage() {
         mensagem: 'Erro ao salvar paciente. Tente novamente.'
       });
     }
-  }; // Função para salvar paciente (criar ou atualizar)
+  };
 
   // Função para excluir um paciente
   const handleExcluirPaciente = async (id: number | string) => {
@@ -160,7 +232,7 @@ function PacienteDashboardPage() {
         });
       }
     }
-  }; // Função para excluir um paciente
+  };
 
   // Renderização condicional baseada no estado de carregamento
   if (loading) {
@@ -169,7 +241,7 @@ function PacienteDashboardPage() {
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-600"></div>
         <p className="ml-2 text-green-700">Carregando dados de pacientes...</p>
       </div>
-    ); // Exibe indicador de carregamento
+    );
   }
 
   return (
@@ -185,7 +257,7 @@ function PacienteDashboardPage() {
         <div className="bg-red-100 p-4 mb-6 rounded-md">
           <p className="text-red-700">{error}</p>
         </div>
-      )} {/* Exibe mensagens de erro caso ocorram */}
+      )}
 
       {feedback && (
         <div className={`p-4 mb-6 rounded-md ${feedback.tipo === 'sucesso' ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -193,7 +265,7 @@ function PacienteDashboardPage() {
             {feedback.mensagem}
           </p>
         </div>
-      )} {/* Exibe feedback de ações de sucesso ou erro */}
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -202,8 +274,11 @@ function PacienteDashboardPage() {
           </h2>
           
           <div className="space-y-4">
+            {/* Campo para nome do paciente */}
             <div>
-              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+              <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
+                Nome Completo <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 id="nome"
@@ -213,63 +288,125 @@ function PacienteDashboardPage() {
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
                 required
               />
-            </div> {/* Campo para nome do paciente */}
+            </div>
 
+            {/* Campo para data de nascimento */}
             <div>
-              <label htmlFor="idade" className="block text-sm font-medium text-gray-700 mb-1">Idade</label>
+              <label htmlFor="data_nascimento" className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Nascimento <span className="text-red-500">*</span>
+              </label>
               <input
-                type="number"
-                id="idade"
-                name="idade"
-                value={novoPaciente.idade}
+                type="date"
+                id="data_nascimento"
+                name="data_nascimento"
+                value={novoPaciente.data_nascimento}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
                 required
               />
-            </div> {/* Campo para idade do paciente */}
+            </div>
 
+            {/* Campo para CPF */}
             <div>
-              <label htmlFor="leito" className="block text-sm font-medium text-gray-700 mb-1">Leito</label>
+              <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-1">
+                CPF <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
-                id="leito"
-                name="leito"
-                value={novoPaciente.leito}
+                id="cpf"
+                name="cpf"
+                value={novoPaciente.cpf}
+                onChange={handleCpfChange}
+                placeholder="000.000.000-00"
+                className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                required
+              />
+            </div>
+
+            {/* Campo para telefone */}
+            <div>
+              <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 mb-1">
+                Telefone
+              </label>
+              <input
+                type="tel"
+                id="telefone"
+                name="telefone"
+                value={novoPaciente.telefone}
+                onChange={handleInputChange}
+                placeholder="(00) 00000-0000"
+                className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+
+            {/* Campo para endereço */}
+            <div>
+              <label htmlFor="endereco" className="block text-sm font-medium text-gray-700 mb-1">
+                Endereço
+              </label>
+              <input
+                type="text"
+                id="endereco"
+                name="endereco"
+                value={novoPaciente.endereco}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
               />
-            </div> {/* Campo para leito do paciente */}
+            </div>
 
+            {/* Campo para tipo sanguíneo */}
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label htmlFor="tipo_sanguineo" className="block text-sm font-medium text-gray-700 mb-1">
+                Tipo Sanguíneo
+              </label>
               <select
-                id="status"
-                name="status"
-                value={novoPaciente.status}
+                id="tipo_sanguineo"
+                name="tipo_sanguineo"
+                value={novoPaciente.tipo_sanguineo}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
               >
-                <option value="Em Triagem">Em Triagem</option>
-                <option value="Internado">Internado</option>
-                <option value="Alta">Alta</option>
-                <option value="Em Observação">Em Observação</option>
-                <option value="Aguardando Exames">Aguardando Exames</option>
+                <option value="">Selecione</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
               </select>
-            </div> {/* Campo para status do paciente */}
+            </div>
 
+            {/* Campo para alergias */}
             <div>
-              <label htmlFor="sinaisVitais" className="block text-sm font-medium text-gray-700 mb-1">Sinais Vitais</label>
-              <input
-                type="text"
-                id="sinaisVitais"
-                name="sinaisVitais"
-                value={novoPaciente.sinaisVitais}
+              <label htmlFor="alergias" className="block text-sm font-medium text-gray-700 mb-1">
+                Alergias
+              </label>
+              <textarea
+                id="alergias"
+                name="alergias"
+                value={novoPaciente.alergias}
                 onChange={handleInputChange}
-                placeholder="Ex: PA 120/80, FC 72bpm, T 36.5°C"
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
-              />
-            </div> {/* Campo para sinais vitais do paciente */}
+                rows={2}
+              ></textarea>
+            </div>
 
+            {/* Campo para histórico médico */}
+            <div>
+              <label htmlFor="historico_medico" className="block text-sm font-medium text-gray-700 mb-1">
+                Histórico Médico
+              </label>
+              <textarea
+                id="historico_medico"
+                name="historico_medico"
+                value={novoPaciente.historico_medico}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                rows={3}
+              ></textarea>
+            </div>
           </div>
 
           <div className="mt-6 flex justify-between">
@@ -296,8 +433,7 @@ function PacienteDashboardPage() {
                 Cadastrar Paciente
               </button>
             )}
-          </div> {/* Botões para cadastrar ou editar paciente */}
-
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -310,19 +446,15 @@ function PacienteDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-medium text-black">{paciente.nome}</p>
-                      <p className="text-sm text-black">Idade: {paciente.idade}</p>
-                      <p className="text-sm text-black">Leito: {paciente.leito || 'Não atribuído'}</p>
+                      <p className="text-sm text-black">
+                        CPF: {paciente.cpf ? `${paciente.cpf.substring(0, 3)}.***.***-${paciente.cpf.substring(9, 11)}` : 'Não informado'}
+                      </p>
+                      <p className="text-sm text-black">
+                        Data Nasc.: {paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : 'Não informada'}
+                      </p>
+                      <p className="text-sm text-black">Telefone: {paciente.telefone || 'Não informado'}</p>
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      paciente.status === 'Internado' ? 'bg-red-100 text-red-800' :
-                      paciente.status === 'Em Triagem' ? 'bg-yellow-100 text-yellow-800' :
-                      paciente.status === 'Alta' ? 'bg-green-100 text-green-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {paciente.status || 'Não definido'}
-                    </span> {/* Badge para status do paciente */}
                   </div>
-                  <p className="text-sm mt-1 text-black">Sinais Vitais: {paciente.sinaisVitais || 'Não informado'}</p>
                   <div className="mt-2 flex space-x-2">
                     <button 
                       onClick={() => iniciarEdicao(paciente)} 
@@ -334,13 +466,13 @@ function PacienteDashboardPage() {
                       className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
                       Excluir
                     </button>
-                  </div> {/* Botões de ação para cada paciente */}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-gray-500">Nenhum paciente cadastrado.</p>
-          )} {/* Renderização condicional para lista vazia */}
+          )}
         </div>
       </div>
     </div>
@@ -349,7 +481,6 @@ function PacienteDashboardPage() {
 
 // HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
 export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico', 'recepcionista']);
-          
 // 
 //  __  ____ ____ _  _ 
 // / _\/ ___) ___) )( \
