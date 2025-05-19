@@ -22,7 +22,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
 
   // Função para verificar se o link atual está ativo
   const isActive = (path: string): string => {
-    return pathname === path ? 'bg-purple-800' : '';
+    return pathname === path || pathname.startsWith(path + '/') ? 'bg-purple-800' : '';
   };
 
   return (
@@ -114,4 +114,4 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
  / _\/ ___) ___) )( \
 /    \___ \___ ) \/ (
 \_/\_(____(____|____/
-   */
+*/
