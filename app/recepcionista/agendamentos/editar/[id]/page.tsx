@@ -8,18 +8,16 @@ import { usePacientes } from '@/lib/apiPaciente';
 import { useUsers } from '@/lib/apiUser';
 import { AgendamentoForm, StatusAgendamento, TipoAgendamento } from '@/types';
 
-// Interface para os parâmetros da página
-interface EditarAgendamentoPageProps {
-  params: {
-    id: string;
-  };
-}
+// Atualização da tipagem conforme documentação do Next.js
+type EditarAgendamentoPageProps = {
+  params: Promise<{ id: string }>;
+};
 
-function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
+async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
+  const params = await props.params;
   const agendamentoId = parseInt(params.id);
   const router = useRouter();
   const { 
-    agendamento, 
     fetchAgendamento, 
     updateAgendamento,
     deleteAgendamento 
@@ -78,7 +76,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
     };
     
     carregarDados();
-  }, [agendamentoId]);
+  }, [agendamentoId, fetchAgendamento, fetchPacientes, fetchUsers]);
   
   // Manipulador de mudança de campos
   const handleInputChange = (
@@ -389,10 +387,3 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
 
 // Proteger a rota apenas para recepcionistas e admins
 export default withAuth(EditarAgendamentoPage, ['recepcionista', 'admin']);
-            
-/*             
-  __  ____ ____ _  _ 
- / _\/ ___) ___) )( \
-/    \___ \___ ) \/ (
-\_/\_(____(____|____/
-*/

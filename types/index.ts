@@ -81,6 +81,14 @@ export interface Atendimento {
   tipo: string;
 }
 
+// Interface para resposta de autenticação
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  user?: User;
+  access_token?: string;
+}
+
 // Tipos de usuário
 export type UserRole = 'admin' | 'medico' | 'enfermeira' | 'recepcionista';
 
