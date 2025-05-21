@@ -9,16 +9,43 @@ import { useUsers } from '@/lib/apiUser';
 import { AgendamentoForm, TipoAgendamento, StatusAgendamento } from '@/types';
 import { format } from 'date-fns';
 
+// Interface para os dados do formulário de novo paciente
+interface NovoPacienteForm {
+  nome: string;
+  data_nascimento: string;
+  cpf: string;
+  telefone: string;
+  endereco: string;
+  tipo_sanguineo: string;
+  alergias: string;
+  historico_medico: string;
+}
+
 function NovoAgendamentoPage() {
   const router = useRouter();
   const { createAgendamento } = useAgendamentos();
-  const { pacientes, fetchPacientes } = usePacientes();
+  const { pacientes, fetchPacientes, createPaciente } = usePacientes();
   const { users, fetchUsers } = useUsers();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
-  // Estado para o formulário
+  // Estado para controlar a exibição do modal de cadastro de paciente
+  const [showModal, setShowModal] = useState<boolean>(false);
+  
+  // Estado para o formulário de novo paciente
+  const [novoPaciente, setNovoPaciente] = useState<NovoPacienteForm>({
+    nome: '',
+    data_nascimento: '',
+    cpf: '',
+    telefone: '',
+    endereco: '',
+    tipo_sanguineo: '',
+    alergias: '',
+    historico_medico: ''
+  });
+  
+  // Estado para o formulário de agendamento
   const [formData, setFormData] = useState<AgendamentoForm>({
     data: format(new Date(), 'yyyy-MM-dd'),
     horario: '08:00',
@@ -47,11 +74,17 @@ function NovoAgendamentoPage() {
     carregarDados();
   }, []);
   
-  // Manipulador de mudança de campos
+  // Manipulador de mudança de campos do agendamento
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    
+    // Checar se precisamos abrir o modal de novo paciente
+    if (name === 'paciente_id' && value === 'novo') {
+      setShowModal(true);
+      return;
+    }
     
     // Converter valores para número quando necessário
     if (name === 'paciente_id' || name === 'medico_id') {
@@ -67,7 +100,111 @@ function NovoAgendamentoPage() {
     }
   };
   
-  // Manipulador de envio do formulário
+  // Manipulador de mudança nos campos do formulário de paciente
+  const handlePacienteInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNovoPaciente((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+  
+  // Função para formatar CPF: 000.000.000-00
+  const formatarCPF = (cpf: string) => {
+    // Remove caracteres não numéricos
+    cpf = cpf.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    cpf = cpf.slice(0, 11);
+    
+    // Formata o CPF
+    if (cpf.length <= 3) {
+      return cpf;
+    } else if (cpf.length <= 6) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    } else if (cpf.length <= 9) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    } else {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+    }
+  };
+  
+  // Handler especial para CPF com formatação
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatarCPF(e.target.value);
+    setNovoPaciente(prev => ({
+      ...prev,
+      cpf: formattedValue
+    }));
+  };
+  
+  // Função para salvar um novo paciente
+  const handleSalvarPaciente = async () => {
+    try {
+      // Remover formatação do CPF antes de enviar
+      const cpfLimpo = novoPaciente.cpf.replace(/\D/g, '');
+      
+      // Validar campos obrigatórios
+      if (!novoPaciente.nome || !novoPaciente.data_nascimento || cpfLimpo.length !== 11) {
+        setError('Preencha os campos obrigatórios corretamente. CPF deve conter 11 dígitos.');
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      const pacienteData = {
+        nome: novoPaciente.nome,
+        cpf: cpfLimpo,
+        data_nascimento: novoPaciente.data_nascimento,
+        telefone: novoPaciente.telefone,
+        endereco: novoPaciente.endereco,
+        tipo_sanguineo: novoPaciente.tipo_sanguineo,
+        alergias: novoPaciente.alergias,
+        historico_medico: novoPaciente.historico_medico
+      };
+      
+      // Criar o novo paciente
+      const novoPacienteCriado = await createPaciente(pacienteData);
+      
+      // Atualizar a lista de pacientes
+      await fetchPacientes();
+      
+      // Fechar o modal
+      setShowModal(false);
+      
+      // Limpar o formulário de paciente
+      setNovoPaciente({
+        nome: '',
+        data_nascimento: '',
+        cpf: '',
+        telefone: '',
+        endereco: '',
+        tipo_sanguineo: '',
+        alergias: '',
+        historico_medico: ''
+      });
+      
+      // Selecionar o novo paciente no formulário de agendamento
+      setFormData({
+        ...formData,
+        paciente_id: novoPacienteCriado.id
+      });
+      
+      // Mostrar mensagem de sucesso temporária
+      setSuccess('Paciente cadastrado com sucesso!');
+      setTimeout(() => setSuccess(null), 3000);
+      
+    } catch (err: any) {
+      console.error('Erro ao cadastrar paciente:', err);
+      setError(err.message || 'Ocorreu um erro ao cadastrar o paciente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Manipulador de envio do formulário de agendamento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -106,7 +243,7 @@ function NovoAgendamentoPage() {
   };
 
   // Renderizar o loading state
-  if (isLoading && !success) {
+  if (isLoading && !success && !showModal) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
@@ -208,12 +345,25 @@ function NovoAgendamentoPage() {
                 required
               >
                 <option value={0}>Selecione um paciente</option>
-                {pacientes.map((paciente) => (
-                  <option key={paciente.id} value={paciente.id}>
-                    {paciente.nome}
-                  </option>
-                ))}
+                {pacientes.length > 0 ? (
+                  pacientes.map((paciente) => (
+                    <option key={paciente.id} value={paciente.id}>
+                      {paciente.nome}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>Nenhum paciente cadastrado</option>
+                )}
+                <option value="novo" className="font-medium text-purple-700">+ Cadastrar Novo Paciente</option>
               </select>
+              
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="mt-2 text-sm text-purple-700 hover:text-purple-900"
+              >
+                Não encontrou o paciente? Cadastre um novo
+              </button>
             </div>
             
             {/* Campo de médico */}
@@ -293,6 +443,177 @@ function NovoAgendamentoPage() {
           </div>
         </form>
       </div>
+      
+      {/* Modal para cadastro de paciente */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-black">Cadastro Rápido de Paciente</h2>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Campo para nome do paciente */}
+              <div>
+                <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome Completo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="nome"
+                  name="nome"
+                  value={novoPaciente.nome}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  required
+                />
+              </div>
+
+              {/* Campo para data de nascimento */}
+              <div>
+                <label htmlFor="data_nascimento" className="block text-sm font-medium text-gray-700 mb-1">
+                  Data de Nascimento <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="data_nascimento"
+                  name="data_nascimento"
+                  value={novoPaciente.data_nascimento}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  required
+                />
+              </div>
+
+              {/* Campo para CPF */}
+              <div>
+                <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-1">
+                  CPF <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="cpf"
+                  name="cpf"
+                  value={novoPaciente.cpf}
+                  onChange={handleCpfChange}
+                  placeholder="000.000.000-00"
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  required
+                />
+              </div>
+
+              {/* Campo para telefone */}
+              <div>
+                <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Telefone
+                </label>
+                <input
+                  type="tel"
+                  id="telefone"
+                  name="telefone"
+                  value={novoPaciente.telefone}
+                  onChange={handlePacienteInputChange}
+                  placeholder="(00) 00000-0000"
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+
+              {/* Campo para endereço */}
+              <div>
+                <label htmlFor="endereco" className="block text-sm font-medium text-gray-700 mb-1">
+                  Endereço
+                </label>
+                <input
+                  type="text"
+                  id="endereco"
+                  name="endereco"
+                  value={novoPaciente.endereco}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+
+              {/* Campo para tipo sanguíneo */}
+              <div>
+                <label htmlFor="tipo_sanguineo" className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo Sanguíneo
+                </label>
+                <select
+                  id="tipo_sanguineo"
+                  name="tipo_sanguineo"
+                  value={novoPaciente.tipo_sanguineo}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">Selecione</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+
+              {/* Campo para alergias */}
+              <div>
+                <label htmlFor="alergias" className="block text-sm font-medium text-gray-700 mb-1">
+                  Alergias
+                </label>
+                <textarea
+                  id="alergias"
+                  name="alergias"
+                  value={novoPaciente.alergias}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  rows={2}
+                ></textarea>
+              </div>
+
+              {/* Campo para histórico médico */}
+              <div>
+                <label htmlFor="historico_medico" className="block text-sm font-medium text-gray-700 mb-1">
+                  Histórico Médico
+                </label>
+                <textarea
+                  id="historico_medico"
+                  name="historico_medico"
+                  value={novoPaciente.historico_medico}
+                  onChange={handlePacienteInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  rows={2}
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSalvarPaciente}
+                className="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded transition duration-300"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Salvando...' : 'Cadastrar Paciente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
