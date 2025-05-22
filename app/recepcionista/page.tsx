@@ -81,8 +81,8 @@ function RecepcionistaDashboardPage() {
   if (isLoading || loadingPacientes) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
-        <p className="ml-2 text-purple-700">Carregando dados...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
+        <p className="ml-2 text-red-700">Carregando dados...</p>
       </div>
     );
   }
@@ -142,20 +142,20 @@ function RecepcionistaDashboardPage() {
             <h2 className="text-lg font-semibold text-black">Fila de Espera</h2>
             <div className="flex space-x-2">
               <button 
-                className="px-3 py-1 bg-purple-700 text-white rounded text-sm hover:bg-purple-800"
+                className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-800"
                 onClick={handleAtualizarFila}
               >
                 Atualizar
               </button>
-              <button className="px-3 py-1 bg-purple-700 text-white rounded text-sm hover:bg-purple-800">
+              <button className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-800">
                 Gerenciar Fila
               </button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-purple-200">
-              <thead className="bg-purple-50">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Paciente
@@ -177,7 +177,7 @@ function RecepcionistaDashboardPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-purple-200">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {filaEspera.map((paciente) => (
                   <tr key={paciente.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -193,16 +193,16 @@ function RecepcionistaDashboardPage() {
                       <div className="text-sm text-black">{paciente.medico}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${paciente.status === 'Aguardando' ? 'bg-purple-100 text-black' :
-                          paciente.status === 'Triagem' ? 'bg-purple-200 text-black' :
-                            paciente.status === 'Em Atendimento' ? 'bg-purple-300 text-black' :
-                              'bg-purple-100 text-black'
+                      <span className={`px-2 py-1 text-xs rounded-full ${paciente.status === 'Aguardando' ? 'bg-red-100 text-black' :
+                          paciente.status === 'Triagem' ? 'bg-red-300 text-black' :
+                            paciente.status === 'Em Atendimento' ? 'bg-red-400 text-black' :
+                              'bg-red-100 text-black'
                         }`}>
                         {paciente.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1 rounded text-xs">
+                      <button className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-xs">
                         Check-in
                       </button>
                     </td>
@@ -217,16 +217,16 @@ function RecepcionistaDashboardPage() {
           <h2 className="text-lg font-semibold text-black mb-4">Ações Rápidas</h2>
 
           <div className="space-y-3">
-            <a href="/recepcionista/pacientes/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/recepcionista/pacientes/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
               Novo Paciente
             </a>
-            <a href="/recepcionista/agendamentos/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/recepcionista/agendamentos/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
               Novo Agendamento
             </a>
-            <a href="/recepcionista/check-in" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/recepcionista/check-in" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
               Check-in de Paciente
             </a>
-            <a href="/recepcionista/acompanhantes/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/recepcionista/acompanhantes/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
               Cadastrar Acompanhante
             </a>
           </div>
@@ -237,12 +237,12 @@ function RecepcionistaDashboardPage() {
               <input
                 type="text"
                 placeholder="Nome ou CPF do paciente"
-                className="flex-1 px-3 py-2 border border-purple-300 rounded-l-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 placeholder:text-[#333333]"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 placeholder:text-[#333333]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button 
-                className="bg-purple-700 text-white px-4 py-2 rounded-r-md hover:bg-purple-800"
+                className="bg-gray-600 text-white px-4 py-2 rounded-r-md hover:bg-gray-700"
                 onClick={handleSearch}
               >
                 Buscar
@@ -256,8 +256,8 @@ function RecepcionistaDashboardPage() {
         <h2 className="text-lg font-semibold text-black mb-4">Próximos Agendamentos</h2>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-purple-200">
-            <thead className="bg-purple-50">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                   Data
@@ -279,7 +279,7 @@ function RecepcionistaDashboardPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-purple-200">
+            <tbody className="bg-white divide-y divide-red-200">
               {proximosAgendamentos.map((agendamento) => (
                 <tr key={agendamento.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
