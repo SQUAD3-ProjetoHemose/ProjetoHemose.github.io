@@ -148,9 +148,9 @@ function AgendamentosPage() {
       case StatusAgendamento.CONFIRMADO:
         return 'bg-green-100 text-green-800';
       case StatusAgendamento.CANCELADO:
-        return 'bg-red-100 text-red-800';
+        return 'bg-gray-400 text-red-800';
       case StatusAgendamento.REALIZADO:
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-red-200 text-purple-800';
       case StatusAgendamento.FALTOU:
         return 'bg-gray-100 text-gray-800';
       default:
@@ -195,8 +195,8 @@ function AgendamentosPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
-        <p className="ml-2 text-purple-700">Carregando agendamentos...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
+        <p className="ml-2 text-red-700">Carregando agendamentos...</p>
       </div>
     );
   }
@@ -212,7 +212,7 @@ function AgendamentosPage() {
           <div className="flex items-center space-x-4">
             <button 
               onClick={handlePreviousDay}
-              className="bg-purple-700 hover:bg-purple-800 text-white p-2 rounded"
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded"
             >
               &lt; Anterior
             </button>
@@ -221,7 +221,7 @@ function AgendamentosPage() {
             </div>
             <button 
               onClick={handleNextDay}
-              className="bg-purple-700 hover:bg-purple-800 text-white p-2 rounded"
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded"
             >
               Próximo &gt;
             </button>
@@ -230,7 +230,7 @@ function AgendamentosPage() {
           {/* Botão de novo agendamento */}
           <button 
             onClick={handleNewAppointment}
-            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded"
+            className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded"
           >
             Novo Agendamento
           </button>
@@ -242,7 +242,7 @@ function AgendamentosPage() {
             <label htmlFor="statusFilter" className="block text-sm font-medium text-black mb-1">Status</label>
             <select
               id="statusFilter"
-              className="border border-purple-300 rounded p-2 w-40"
+              className="border border-red-300 rounded p-2 w-40"
               value={filteredStatus}
               onChange={(e) => setFilteredStatus(e.target.value as StatusAgendamento | '')}
             >
@@ -259,7 +259,7 @@ function AgendamentosPage() {
             <label htmlFor="tipoFilter" className="block text-sm font-medium text-black mb-1">Tipo</label>
             <select
               id="tipoFilter"
-              className="border border-purple-300 rounded p-2 w-40"
+              className="border border-red-300 rounded p-2 w-40"
               value={filteredTipo}
               onChange={(e) => setFilteredTipo(e.target.value as TipoAgendamento | '')}
             >
@@ -275,7 +275,7 @@ function AgendamentosPage() {
             <label htmlFor="medicoFilter" className="block text-sm font-medium text-black mb-1">Médico</label>
             <select
               id="medicoFilter"
-              className="border border-purple-300 rounded p-2 w-56"
+              className="border border-red-300 rounded p-2 w-56"
               value={filteredMedicoId}
               onChange={(e) => setFilteredMedicoId(e.target.value ? +e.target.value : '')}
             >
@@ -291,8 +291,8 @@ function AgendamentosPage() {
       {/* Lista de Agendamentos */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-purple-200">
-            <thead className="bg-purple-50">
+          <table className="min-w-full divide-y divide-gray-300">
+            <thead className="bg-gray-100">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                   Horário
@@ -314,7 +314,7 @@ function AgendamentosPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-purple-200">
+            <tbody className="bg-white divide-y divide-red-200">
               {filteredAgendamentos.length > 0 ? (
                 filteredAgendamentos.map((agendamento) => (
                   <tr key={agendamento.id}>
@@ -353,7 +353,7 @@ function AgendamentosPage() {
                         {agendamento.status === StatusAgendamento.AGENDADO && (
                           <button
                             onClick={() => handleConfirmAppointment(agendamento.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs"
                           >
                             Confirmar
                           </button>
@@ -363,7 +363,7 @@ function AgendamentosPage() {
                           <>
                             <button
                               onClick={() => handleCompleteAppointment(agendamento.id)}
-                              className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs"
+                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
                             >
                               Atendido
                             </button>
@@ -377,7 +377,7 @@ function AgendamentosPage() {
                             
                             <button
                               onClick={() => handleCancelAppointment(agendamento.id)}
-                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                              className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs"
                             >
                               Cancelar
                             </button>

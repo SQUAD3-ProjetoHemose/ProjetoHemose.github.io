@@ -9,10 +9,7 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true, // Ignorar ESLint durante builds
-  },
-  turbopack: {
-    root: path.join(__dirname, '..'), // Caminho raiz para turbopack
-  },
+  }
 };
 
 export default nextConfig; // Exportação padrão da configuração

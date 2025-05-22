@@ -428,7 +428,7 @@ function PacienteDashboardPage() {
             ) : (
               <button
                 onClick={handleSalvarPaciente}
-                className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300"
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
               >
                 Cadastrar Paciente
               </button>

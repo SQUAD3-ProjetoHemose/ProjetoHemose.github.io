@@ -167,8 +167,8 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
   if (isLoading && !success) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
-        <p className="ml-2 text-purple-700">Carregando...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-700"></div>
+        <p className="ml-2 text-red-800">Carregando...</p>
       </div>
     );
   }
@@ -229,7 +229,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="data"
                 value={formData.data}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-600 focus:border-red-600"
                 required
               />
             </div>
@@ -245,7 +245,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="horario"
                 value={formData.horario}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-500 focus:border-red-500"
                 required
               />
             </div>
@@ -260,7 +260,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="tipo"
                 value={formData.tipo}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-600 focus:border-red-600"
                 required
               >
                 <option value={TipoAgendamento.CONSULTA}>Consulta</option>
@@ -280,7 +280,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="paciente_id"
                 value={formData.paciente_id}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-500 focus:border-red-500"
                 required
               >
                 <option value={0}>Selecione um paciente</option>
@@ -302,7 +302,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="medico_id"
                 value={formData.medico_id}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-500 focus:border-red-500"
                 required
               >
                 <option value={0}>Selecione um médico</option>
@@ -326,7 +326,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                className="border border-red-300 rounded-md p-2 w-full focus:ring-red-500 focus:border-red-500"
               >
                 <option value={StatusAgendamento.AGENDADO}>Agendado</option>
                 <option value={StatusAgendamento.CONFIRMADO}>Confirmado</option>
@@ -348,7 +348,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
               value={formData.observacoes || ''}
               onChange={handleInputChange}
               rows={3}
-              className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+              className="border border-red-300 rounded-md p-2 w-full focus:ring-red-500 focus:border-red-500"
               placeholder="Informações adicionais sobre o agendamento..."
             />
           </div>
@@ -374,7 +374,7 @@ function EditarAgendamentoPage({ params }: EditarAgendamentoPageProps) {
               </button>
               <button
                 type="submit"
-                className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded"
+                className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded"
                 disabled={isLoading || success !== null}
               >
                 {isLoading ? 'Salvando...' : 'Salvar Alterações'}

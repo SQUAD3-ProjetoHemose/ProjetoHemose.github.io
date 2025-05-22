@@ -11,33 +11,31 @@ interface RecepcionistaLayoutProps {
 }
 
 export default function RecepcionistaLayout({ children }: RecepcionistaLayoutProps) {
-  const { user, logout } = useAuth(); // Obtendo usuário e função de logout do contexto de autenticação
+  const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  // Função para realizar logout e redirecionar para a página de login
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
-  // Função para verificar se o link atual está ativo
   const isActive = (path: string): string => {
-    return pathname === path || pathname.startsWith(path + '/') ? 'bg-purple-800' : '';
+    return pathname === path || pathname.startsWith(path + '/') ? 'bg-red-800' : '';
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-purple-700 text-white shadow-md">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+      <header className="bg-gradient-to-r from-red-800 to-red-500 text-white">
+        <div className="flex px-9 py-5  justify-between">
+          <div className="flex items-center space-x-3">
             <h1 className="text-xl font-bold">HEMOSE</h1>
-            <span className="text-sm bg-purple-900 px-2 py-1 rounded">Recepção</span>
+            <span className="text-sm bg-red-700 px-2 py-1 rounded">Recepção</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-5">
             <span>Olá, {user?.nome || 'Recepcionista'}</span>
             <button 
               onClick={handleLogout}
-              className="px-3 py-1 bg-purple-800 text-white rounded hover:bg-purple-900 text-sm"
+              className="px-5 py-1 bg- text-white bg-red-700 rounded hover:bg-red-900 text-sm"
             >
               Sair
             </button>
@@ -46,13 +44,13 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
       </header>
 
       <div className="flex flex-1">
-        <aside className="w-64 bg-purple-700 text-white">
+        <aside className="w-64 bg-gradient-to-br from-red-800 to-red-700 text-white">
           <nav className="p-4">
             <ul className="space-y-2">
               <li>
                 <Link 
                   href="/recepcionista" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista')}`}
                 >
                   Dashboard
                 </Link>
@@ -60,7 +58,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
               <li>
                 <Link 
                   href="/recepcionista/pacientes" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista/pacientes')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista/pacientes')}`}
                 >
                   Cadastro de Pacientes
                 </Link>
@@ -68,7 +66,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
               <li>
                 <Link 
                   href="/recepcionista/agendamentos" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista/agendamentos')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista/agendamentos')}`}
                 >
                   Agendamentos
                 </Link>
@@ -76,7 +74,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
               <li>
                 <Link 
                   href="/recepcionista/check-in" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista/check-in')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista/check-in')}`}
                 >
                   Check-in
                 </Link>
@@ -84,7 +82,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
               <li>
                 <Link 
                   href="/recepcionista/acompanhantes" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista/acompanhantes')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista/acompanhantes')}`}
                 >
                   Acompanhantes
                 </Link>
@@ -92,7 +90,7 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
               <li>
                 <Link 
                   href="/recepcionista/relatorios" 
-                  className={`block px-4 py-2 rounded hover:bg-purple-800 ${isActive('/recepcionista/relatorios')}`}
+                  className={`block px-4 py-2 rounded hover:bg-red-900 ${isActive('/recepcionista/relatorios')}`}
                 >
                   Relatórios
                 </Link>
