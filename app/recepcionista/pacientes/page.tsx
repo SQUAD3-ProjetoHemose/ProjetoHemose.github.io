@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
-import { usePacientes } from '@/lib/apiPaciente';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { Paciente } from '@/types';
-import { useAuth } from '@/lib/authContext';
+import { useAuthentication } from '@/hooks';
+import usePacienteStore from '@/store/pacienteStore';
+import { usePacienteForm } from '@/hooks/usePaciente';
 
 // Interface para os dados do formulário de novo paciente
 interface NovoPacienteForm {
@@ -20,7 +21,7 @@ interface NovoPacienteForm {
 
 function PacienteDashboardPage() {
   // Obter o usuário do contexto de autenticação
-  const { user } = useAuth();
+  const { user } = useAuthentication();
   
   // Estados para gerenciar os pacientes e o formulário
   const [novoPaciente, setNovoPaciente] = useState<NovoPacienteForm>({
@@ -43,7 +44,7 @@ function PacienteDashboardPage() {
     createPaciente,
     updatePaciente,
     deletePaciente
-  } = usePacientes(); // Utilizando o hook de pacientes para operações CRUD
+  } = usePacienteStore(); // Utilizando o hook de pacientes para operações CRUD
 
   // Estado para controlar edição
   const [editandoPaciente, setEditandoPaciente] = useState<Paciente | null>(null);
@@ -286,6 +287,7 @@ function PacienteDashboardPage() {
                 value={novoPaciente.nome}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                autoComplete="off"
                 required
               />
             </div>
@@ -302,6 +304,7 @@ function PacienteDashboardPage() {
                 value={novoPaciente.data_nascimento}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                autoComplete="off"
                 required
               />
             </div>
@@ -319,6 +322,7 @@ function PacienteDashboardPage() {
                 onChange={handleCpfChange}
                 placeholder="000.000.000-00"
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                autoComplete="off"
                 required
               />
             </div>
@@ -336,6 +340,7 @@ function PacienteDashboardPage() {
                 onChange={handleInputChange}
                 placeholder="(00) 00000-0000"
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                autoComplete="off"
               />
             </div>
 
@@ -351,6 +356,7 @@ function PacienteDashboardPage() {
                 value={novoPaciente.endereco}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                autoComplete="off"
               />
             </div>
 
@@ -390,6 +396,7 @@ function PacienteDashboardPage() {
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
                 rows={2}
+                autoComplete="off"
               ></textarea>
             </div>
 
@@ -405,6 +412,7 @@ function PacienteDashboardPage() {
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
                 rows={3}
+                autoComplete="off"
               ></textarea>
             </div>
           </div>
@@ -480,9 +488,10 @@ function PacienteDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
-export default withAuth(PacienteDashboardPage, ['admin', 'enfermeira', 'medico', 'recepcionista']);
-// 
-//  __  ____ ____ _  _ 
-// / _\/ ___) ___) )( \
-// /    \___ \___ ) \/ (
-// \_/\_(____(____|____/
+export default withProtectedRoute(['admin', 'enfermeira', 'medico', 'recepcionista'])(PacienteDashboardPage);
+/* 
+  __  ____ ____ _  _ 
+ / _\/ ___) ___) )( \
+/    \___ \___ ) \/ (
+\_/\_(____(____|____/
+*/

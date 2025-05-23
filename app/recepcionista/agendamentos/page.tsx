@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
 import { Agendamento, StatusAgendamento, TipoAgendamento } from '@/types';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,10 +26,10 @@ function AgendamentosPage() {
     cancelarAgendamento,
     realizarAgendamento,
     registrarFalta
-  } = useAgendamentos();
+  } = useAgendamentoStore();
   
-  const { pacientes } = usePacientes();
-  const { users, fetchUsers } = useUsers();
+  const { pacientes } = usePacienteStore();
+  const { users, fetchUsers } = useUserStore();
   
   // Carregar médicos e agendamentos da data selecionada
   useEffect(() => {
@@ -440,7 +440,7 @@ function AgendamentosPage() {
 }
 
 // Protege a rota para apenas recepcionista e admin
-export default withAuth(AgendamentosPage, ['recepcionista', 'admin']);
+export default withProtectedRoute(['recepcionista', 'admin'])(AgendamentosPage);
             
 /*             
   __  ____ ____ _  _ 

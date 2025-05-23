@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { Stats } from '@/types';
-import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
+import { useAuthentication } from '@/hooks';
 
+// Interface para pacientes urgentes
 interface PacienteUrgente {
   id: number | string;
   nome: string;
@@ -24,7 +25,7 @@ interface Medicacao {
 
 function EnfermeiraDashboardPage() {
   // Obter o usuário do contexto de autenticação
-  const { user } = useAuth();
+  const { user } = useAuthentication();
   
   const [stats, setStats] = useState<Stats>({
     pacientesInternados: 0,
@@ -214,7 +215,7 @@ function EnfermeiraDashboardPage() {
   );
 }
 
-export default withAuth(EnfermeiraDashboardPage, ['enfermeira']);
+export default withProtectedRoute(['enfermeira'])(EnfermeiraDashboardPage);
             
 /*             
   __  ____ ____ _  _ 

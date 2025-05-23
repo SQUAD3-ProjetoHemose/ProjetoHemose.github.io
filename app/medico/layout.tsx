@@ -1,7 +1,7 @@
 'use client';
 
 import MedicoLayout from '@/components/layout/MedicoLayout';
-import withAuth from '@/lib/withAuth';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 
 // Definindo a tipagem correta das props para o componente
 interface MedicoRootLayoutProps { 
@@ -11,4 +11,11 @@ function MedicoRootLayout({ children }: MedicoRootLayoutProps) { //
   return <MedicoLayout>{children}</MedicoLayout>; // 
 } 
 
-export default withAuth(MedicoRootLayout, ['medico']);
+export default withProtectedRoute(['medico'])(MedicoRootLayout);
+            
+/*             
+  __  ____ ____ _  _ 
+ / _\/ ___) ___) )( \
+/    \___ \___ ) \/ (
+\_/\_(____(____|____/
+*/

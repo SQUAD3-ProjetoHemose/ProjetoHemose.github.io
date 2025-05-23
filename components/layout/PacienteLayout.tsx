@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthentication } from '@/hooks';
 import { useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
@@ -10,10 +11,10 @@ interface PacienteLayoutProps {
 
 export function PacienteLayout({ children, pacienteNome }: PacienteLayoutProps) {
   const router = useRouter();
+  const { logout } = useAuthentication();
 
   const handleLogout = () => {
-    // Substitua pela lógica de logout real (ex: signOut() do Auth.js)
-    router.push('/login');
+    logout();
   };
 
   return (
@@ -53,3 +54,10 @@ export function PacienteLayout({ children, pacienteNome }: PacienteLayoutProps) 
     </div>
   );
 }
+            
+/*             
+  __  ____ ____ _  _ 
+ / _\/ ___) ___) )( \
+/    \___ \___ ) \/ (
+\_/\_(____(____|____/
+*/

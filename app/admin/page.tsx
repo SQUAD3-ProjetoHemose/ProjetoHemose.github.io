@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { Stats } from '@/types';
-import { useUsers } from '@/lib/apiUser';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useAuth } from '@/lib/authContext';
+import useUserStore from '@/store/userStore';
+import usePacienteStore from '@/store/pacienteStore';
+import { useAuthentication } from '@/hooks';
 
 // Interface para atividades recentes
 interface Atividade {
@@ -15,8 +15,8 @@ interface Atividade {
 }
 
 function AdminDashboardPage() {
-  // Obter o usuário do contexto de autenticação em vez de props
-  const { user } = useAuth();
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuthentication();
   
   // Estados para armazenar dados dinâmicos
   const [stats, setStats] = useState<Stats>({
@@ -30,8 +30,8 @@ function AdminDashboardPage() {
   });
   
   const [atividades, setAtividades] = useState<Atividade[]>([]);
-  const { fetchUsers, loading: loadingUsers } = useUsers();
-  const { fetchPacientes, loading: loadingPacientes } = usePacientes();
+  const { fetchUsers, users } = useUserStore();
+  const { fetchPacientes, pacientes, loading: loadingPacientes } = usePacienteStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -41,12 +41,17 @@ function AdminDashboardPage() {
         setIsLoading(true);
         
         // Buscar usuários por tipo para calcular estatísticas
-        const medicos = await fetchUsers('medico');
-        const enfermeiras = await fetchUsers('enfermeira');
-        const recepcionistas = await fetchUsers('recepcionista');
+        await fetchUsers('medico');
+        await fetchUsers('enfermeira');
+        await fetchUsers('recepcionista');
         
         // Buscar pacientes
-        const pacientes = await fetchPacientes();
+        await fetchPacientes();
+        
+        // Filtrar os usuários por tipo
+        const medicos = users.filter(u => u.tipo === 'medico');
+        const enfermeiras = users.filter(u => u.tipo === 'enfermeira');
+        const recepcionistas = users.filter(u => u.tipo === 'recepcionista');
         
         // Em uma aplicação real, estes dados viriam de endpoints específicos
         // Por enquanto, vamos calcular baseado nos dados que temos
@@ -75,10 +80,10 @@ function AdminDashboardPage() {
     };
 
     carregarDados();
-  }, []); // Array de dependências vazio para executar apenas na montagem do componente
+  }, [fetchUsers, fetchPacientes, users, pacientes.length]); // Updated dependencies
 
   // Renderização condicional de loader durante o carregamento
-  if (isLoading || loadingUsers || loadingPacientes) {
+  if (isLoading || loadingPacientes) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-rose-600"></div>
@@ -172,8 +177,7 @@ function AdminDashboardPage() {
   );
 }
 
-export default withAuth(AdminDashboardPage, ['admin']); // Protege a rota apenas para administradores
-            
+export default withProtectedRoute(['admin'])(AdminDashboardPage); 
             
 /*
    __  ____ ____ _  _ 

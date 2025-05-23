@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
 import { Stats, FilaEspera } from '@/types';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
+import usePacienteStore from '@/store/pacienteStore';
+import { useAuthentication } from '@/hooks';
 
 // Interface para agendamentos futuros
 interface Agendamento {
@@ -18,7 +17,7 @@ interface Agendamento {
 
 function RecepcionistaDashboardPage() {
   // Obter o usuário do contexto de autenticação
-  const { user } = useAuth();
+  const { user } = useAuthentication();
   
   // Estados para armazenar dados dinâmicos da recepção
   const [stats, setStats] = useState<Stats>({
@@ -31,7 +30,7 @@ function RecepcionistaDashboardPage() {
   const [filaEspera, setFilaEspera] = useState<FilaEspera[]>([]);
   const [proximosAgendamentos, setProximosAgendamentos] = useState<Agendamento[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const { fetchPacientes, loading: loadingPacientes } = usePacientes();
+  const { pacientes, fetchPacientes, loading: loadingPacientes } = usePacienteStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -41,7 +40,7 @@ function RecepcionistaDashboardPage() {
         setIsLoading(true);
         
         // Buscar pacientes reais para utilizar nos dados simulados
-        const pacientes = await fetchPacientes();
+        await fetchPacientes();
         
         // Dados estatísticos - simulados mas baseados em dados reais quando possível
         setStats({
@@ -75,7 +74,7 @@ function RecepcionistaDashboardPage() {
     };
 
     carregarDados();
-  }, []); // Array vazio para executar apenas na montagem do componente
+  }, [fetchPacientes, pacientes.length]); // Updated dependencies
 
   // Exibe loader enquanto os dados estão carregando
   if (isLoading || loadingPacientes) {
@@ -316,8 +315,8 @@ function RecepcionistaDashboardPage() {
   );
 }
 
-// HOC para proteger a rota, permitindo apenas recepcionistas
-export default withAuth(RecepcionistaDashboardPage, ['recepcionista']);
+// Exportar diretamente sem HOC, pois a proteção já está no layout
+export default RecepcionistaDashboardPage;
             
 /*             
   __  ____ ____ _  _ 

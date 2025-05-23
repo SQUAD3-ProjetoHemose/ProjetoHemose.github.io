@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUsers } from '@/lib/apiUser';
-import withAuth from '@/lib/withAuth';
+import useUserStore from '@/store/userStore';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { User, UserRole } from '@/types';
-import { useAuth } from '@/lib/authContext'; // Importando o hook de autenticação
+import { useAuthentication } from '@/hooks';
+import { useUserForm } from '@/hooks/useUser';
 
 // Interface para os dados do formulário
 interface FormData {
@@ -16,8 +17,8 @@ interface FormData {
 }
 
 function AdminUsersPage() {
-  // Obter o usuário do contexto de autenticação em vez de props
-  const { user } = useAuth();
+  // Obter o usuário do contexto de autenticação
+  const { user } = useAuthentication();
   
   const [activeTab, setActiveTab] = useState<'todos' | UserRole>('todos');
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -38,7 +39,7 @@ function AdminUsersPage() {
     createUser, 
     updateUser, 
     deleteUser 
-  } = useUsers();
+  } = useUserStore();
 
   useEffect(() => {
     // Carrega a lista de usuários quando o componente é montado
@@ -378,7 +379,8 @@ function AdminUsersPage() {
   );
 }
 
-export default withAuth(AdminUsersPage, ['admin']); // Protege a rota apenas para administradores
+// HOC para proteger a rota, permitindo apenas administradores
+export default withProtectedRoute(['admin'])(AdminUsersPage);
             
             
 /* 

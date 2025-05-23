@@ -19,7 +19,8 @@
     "next": "^15.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "typeorm": "^0.3.23"
+    "typeorm": "^0.3.23",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

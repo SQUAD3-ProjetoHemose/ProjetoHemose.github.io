@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
 import { StatusAgendamento } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,10 +22,10 @@ function CheckInPage() {
     fetchAgendamentosHoje,
     fetchAgendamentos,
     confirmarAgendamento
-  } = useAgendamentos();
+  } = useAgendamentoStore();
   
-  const { pacientes, fetchPacientes } = usePacientes();
-  const { users } = useUsers();
+  const { pacientes, fetchPacientes } = usePacienteStore();
+  const { users } = useUserStore();
   
   // Carregar agendamentos do dia e pacientes
   useEffect(() => {
@@ -294,7 +294,7 @@ function CheckInPage() {
 }
 
 // Proteger a rota para apenas recepcionista e admin
-export default withAuth(CheckInPage, ['recepcionista', 'admin']);
+export default withProtectedRoute(['recepcionista', 'admin'])(CheckInPage);
             
 /*             
   __  ____ ____ _  _ 

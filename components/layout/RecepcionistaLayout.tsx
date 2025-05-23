@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/authContext'; // Importação corrigida do hook useAuth
+import { useAuthentication } from '@/hooks';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -11,18 +11,22 @@ interface RecepcionistaLayoutProps {
 }
 
 export default function RecepcionistaLayout({ children }: RecepcionistaLayoutProps) {
-  const { user, logout } = useAuth(); // Obtendo usuário e função de logout do contexto de autenticação
+  const { user, logout } = useAuthentication(); // Obtendo usuário e função de logout do hook
   const pathname = usePathname();
 
   // Função para realizar logout e redirecionar para a página de login
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
   };
 
   // Função para verificar se o link atual está ativo
   const isActive = (path: string): string => {
-    return pathname === path || pathname.startsWith(path + '/') ? 'bg-purple-800' : '';
+    // Para o dashboard principal, verificar se é exatamente /recepcionista
+    if (path === '/recepcionista') {
+      return pathname === path ? 'bg-purple-800' : '';
+    }
+    // Para outras rotas, verificar se começam com o path
+    return pathname.startsWith(path) ? 'bg-purple-800' : '';
   };
 
   return (

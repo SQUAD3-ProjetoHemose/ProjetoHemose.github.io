@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { Stats, Atendimento } from '@/types';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useAuth } from '@/lib/authContext'; // Corrigindo importação do useAuth
+import usePacienteStore from '@/store/pacienteStore';
+import { useAuthentication } from '@/hooks';
 
 // Interface para atividades recentes
 interface AtividadeMedica {
@@ -15,7 +15,7 @@ interface AtividadeMedica {
 
 function MedicoDashboardPage() {
   // Obter o usuário do contexto de autenticação
-  const { user } = useAuth();
+  const { user } = useAuthentication();
   
   // Estados para armazenar dados dinâmicos do médico
   const [stats, setStats] = useState<Stats>({
@@ -27,7 +27,7 @@ function MedicoDashboardPage() {
 
   const [proximosAtendimentos, setProximosAtendimentos] = useState<Atendimento[]>([]);
   const [atividades, setAtividades] = useState<AtividadeMedica[]>([]);
-  const { fetchPacientes, loading: loadingPacientes } = usePacientes();
+  const { fetchPacientes, pacientes, loading: loadingPacientes } = usePacienteStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function MedicoDashboardPage() {
         setIsLoading(true);
         
         // Buscar pacientes
-        const pacientes = await fetchPacientes();
+        await fetchPacientes();
         
         // Em uma aplicação real, estes dados viriam de endpoints específicos
         // Por enquanto, vamos calcular baseado nos dados que temos ou simular
@@ -71,7 +71,7 @@ function MedicoDashboardPage() {
     };
 
     carregarDadosMedico();
-  }, []); // Array vazio para executar apenas na montagem do componente
+  }, [fetchPacientes]); // Updated dependency
 
   // Exibe loader enquanto os dados estão carregando
   if (isLoading || loadingPacientes) {
@@ -181,7 +181,7 @@ function MedicoDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas médicos
-export default withAuth(MedicoDashboardPage, ['medico']);
+export default withProtectedRoute(['medico'])(MedicoDashboardPage);
             
 /*             
   __  ____ ____ _  _ 

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
 import { AgendamentoForm, TipoAgendamento, StatusAgendamento } from '@/types';
 import { format } from 'date-fns';
 
@@ -23,9 +23,9 @@ interface NovoPacienteForm {
 
 function NovoAgendamentoPage() {
   const router = useRouter();
-  const { createAgendamento } = useAgendamentos();
-  const { pacientes, fetchPacientes, createPaciente } = usePacientes();
-  const { users, fetchUsers } = useUsers();
+  const { createAgendamento } = useAgendamentoStore();
+  const { pacientes, fetchPacientes, createPaciente } = usePacienteStore();
+  const { users, fetchUsers } = useUserStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -291,6 +291,7 @@ function NovoAgendamentoPage() {
                 value={formData.data}
                 onChange={handleInputChange}
                 className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                autoComplete="off"
                 required
               />
             </div>
@@ -307,6 +308,7 @@ function NovoAgendamentoPage() {
                 value={formData.horario}
                 onChange={handleInputChange}
                 className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
+                autoComplete="off"
                 required
               />
             </div>
@@ -421,6 +423,7 @@ function NovoAgendamentoPage() {
               rows={3}
               className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
               placeholder="Informações adicionais sobre o agendamento..."
+              autoComplete="off"
             />
           </div>
           
@@ -473,6 +476,7 @@ function NovoAgendamentoPage() {
                   value={novoPaciente.nome}
                   onChange={handlePacienteInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -489,6 +493,7 @@ function NovoAgendamentoPage() {
                   value={novoPaciente.data_nascimento}
                   onChange={handlePacienteInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -506,6 +511,7 @@ function NovoAgendamentoPage() {
                   onChange={handleCpfChange}
                   placeholder="000.000.000-00"
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -523,6 +529,7 @@ function NovoAgendamentoPage() {
                   onChange={handlePacienteInputChange}
                   placeholder="(00) 00000-0000"
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  autoComplete="off"
                 />
               </div>
 
@@ -538,6 +545,7 @@ function NovoAgendamentoPage() {
                   value={novoPaciente.endereco}
                   onChange={handlePacienteInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                  autoComplete="off"
                 />
               </div>
 
@@ -577,6 +585,7 @@ function NovoAgendamentoPage() {
                   onChange={handlePacienteInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
                   rows={2}
+                  autoComplete="off"
                 ></textarea>
               </div>
 
@@ -592,6 +601,7 @@ function NovoAgendamentoPage() {
                   onChange={handlePacienteInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-purple-500 focus:border-purple-500"
                   rows={2}
+                  autoComplete="off"
                 ></textarea>
               </div>
             </div>
@@ -619,7 +629,7 @@ function NovoAgendamentoPage() {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withAuth(NovoAgendamentoPage, ['recepcionista', 'admin']);
+export default withProtectedRoute(['recepcionista', 'admin'])(NovoAgendamentoPage);
             
 /*             
   __  ____ ____ _  _ 

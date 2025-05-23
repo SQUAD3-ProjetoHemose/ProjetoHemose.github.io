@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
 import { AgendamentoForm, StatusAgendamento, TipoAgendamento } from '@/types';
 
 // Atualização da tipagem conforme documentação do Next.js
@@ -21,9 +21,9 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
     fetchAgendamento, 
     updateAgendamento,
     deleteAgendamento 
-  } = useAgendamentos();
-  const { pacientes, fetchPacientes } = usePacientes();
-  const { users, fetchUsers } = useUsers();
+  } = useAgendamentoStore();
+  const { pacientes, fetchPacientes } = usePacienteStore();
+  const { users, fetchUsers } = useUserStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -386,4 +386,11 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withAuth(EditarAgendamentoPage, ['recepcionista', 'admin']);
+export default withProtectedRoute(['recepcionista', 'admin'])(EditarAgendamentoPage);
+            
+/*             
+  __  ____ ____ _  _ 
+ / _\/ ___) ___) )( \
+/    \___ \___ ) \/ (
+\_/\_(____(____|____/
+*/
