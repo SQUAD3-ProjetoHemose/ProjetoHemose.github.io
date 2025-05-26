@@ -18,12 +18,19 @@ export default function LoginPage() {
     setError('');
 
     try {
+      console.log('Tentando fazer login com:', { email }); // Log para debug
       const result = await login(email, senha);
+      
+      if (!result.success) {
+        setError(result.message || 'Falha na autenticação');
+        return;
+      }
       
       // O redirecionamento será automático pelo hook useAuthentication
       // Não precisamos redirecionar manualmente aqui
 
     } catch (err: any) {
+      console.error('Erro no login:', err); // Log para debug
       setError(err.message || 'Ocorreu um erro durante o login');
     } finally {
       setLoading(false);

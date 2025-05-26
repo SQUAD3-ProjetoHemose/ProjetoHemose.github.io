@@ -1,8 +1,16 @@
 // Gerenciador de estado centralizado para autenticação usando Zustand
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import api from '@/lib/api';
-import { User, AuthResponse } from '@/types';
+import { authAPI } from '@/lib/api';
+import { User, UserRole } from '@/types'; // Importar UserRole também
+
+// Interface para resposta de autenticação específica do store
+interface AuthResponse {
+  success: boolean;
+  token?: string;
+  user?: User;
+  message?: string;
+}
 
 interface AuthState {
   // Estado
@@ -12,10 +20,11 @@ interface AuthState {
   error: string | null;
   
   // Ações
-  login: (email: string, senha: string) => Promise<AuthResponse>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
   logout: () => void;
   isAuthenticated: () => boolean;
-  hasRole: (role: string) => boolean;
+  hasRole: (role: UserRole) => boolean; // Tipagem mais específica
+  getProfile: () => Promise<void>;
 }
 
 // Utilizamos o middleware persist para manter o estado de autenticação
@@ -30,33 +39,35 @@ const useAuthStore = create<AuthState>()(
       error: null,
       
       // Ações
-      login: async (email: string, senha: string) => {
+      login: async (email: string, password: string) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await api.post<AuthResponse>('/auth/login', { email, senha });
+          const response = await authAPI.login({ email, password });
           
-          if (response.data.success && response.data.user && response.data.access_token) {
+          // Verificar se o login foi bem-sucedido
+          if (response.success && response.access_token && response.user) {
+            const token = response.access_token;
+            const user = response.user;
+            
             set({
-              user: response.data.user,
-              token: response.data.access_token,
+              user: user,
+              token: token,
               error: null
             });
             
             // Configurar o token para requisições futuras
-            // O interceptor em api.ts já faz isso, 
-            // mas aqui garantimos que temos o token no localStorage
-            localStorage.setItem('token', response.data.access_token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
             
-            return { success: true, user: response.data.user };
+            return { success: true, user: user, token: token };
           } else {
-            const message = response.data.message || 'Falha na autenticação';
+            const message = 'Credenciais inválidas';
             set({ error: message });
             return { success: false, message };
           }
         } catch (err: any) {
-          const message = err.response?.data?.message || 'Erro ao fazer login';
+          const message = err.message || 'Erro ao fazer login';
           set({ error: message });
           return { success: false, message };
         } finally {
@@ -76,9 +87,28 @@ const useAuthStore = create<AuthState>()(
         return !!state.user && !!state.token;
       },
 
-      hasRole: (role: string) => {
+      hasRole: (role: UserRole) => {
         const state = get();
-        return state.user?.tipo === role;
+        return state.user?.tipo === role; // Usar apenas 'tipo' que é o campo correto
+      },
+
+      getProfile: async () => {
+        set({ loading: true, error: null });
+        
+        try {
+          const response = await authAPI.profile();
+          if (response.user) {
+            set({ user: response.user });
+            localStorage.setItem('user', JSON.stringify(response.user));
+          }
+        } catch (err: any) {
+          const message = err.message || 'Erro ao buscar perfil';
+          set({ error: message });
+          // Se falhar ao buscar perfil, fazer logout
+          get().logout();
+        } finally {
+          set({ loading: false });
+        }
       }
     }),
     {
@@ -93,6 +123,8 @@ const useAuthStore = create<AuthState>()(
 );
 
 export default useAuthStore;
+
+
             
             
 /*             

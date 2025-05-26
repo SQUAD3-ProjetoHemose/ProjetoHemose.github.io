@@ -6,7 +6,7 @@ import { withProtectedRoute } from '@/hooks/useAuthentication';
 import useAgendamentoStore from '@/store/agendamentoStore';
 import usePacienteStore from '@/store/pacienteStore';
 import useUserStore from '@/store/userStore';
-import { AgendamentoForm, StatusAgendamento, TipoAgendamento } from '@/types';
+import { AgendamentoForm, StatusAgendamento, TipoAgendamento, UserRole } from '@/types';
 
 // Atualização da tipagem conforme documentação do Next.js
 type EditarAgendamentoPageProps = {
@@ -386,7 +386,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withProtectedRoute(['recepcionista', 'admin'])(EditarAgendamentoPage);
+export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(EditarAgendamentoPage);
             
 /*             
   __  ____ ____ _  _ 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
-import { Stats } from '@/types';
+import { Stats, UserRole } from '@/types';
 import { useAuthentication } from '@/hooks';
 
 // Interface para pacientes urgentes
@@ -215,7 +215,7 @@ function EnfermeiraDashboardPage() {
   );
 }
 
-export default withProtectedRoute(['enfermeira'])(EnfermeiraDashboardPage);
+export default withProtectedRoute([UserRole.ENFERMEIRA])(EnfermeiraDashboardPage);
             
 /*             
   __  ____ ____ _  _ 

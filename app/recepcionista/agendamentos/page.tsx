@@ -6,7 +6,7 @@ import { withProtectedRoute } from '@/hooks/useAuthentication';
 import useAgendamentoStore from '@/store/agendamentoStore';
 import usePacienteStore from '@/store/pacienteStore';
 import useUserStore from '@/store/userStore';
-import { Agendamento, StatusAgendamento, TipoAgendamento } from '@/types';
+import { Agendamento, StatusAgendamento, TipoAgendamento, UserRole } from '@/types';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -440,7 +440,7 @@ function AgendamentosPage() {
 }
 
 // Protege a rota para apenas recepcionista e admin
-export default withProtectedRoute(['recepcionista', 'admin'])(AgendamentosPage);
+export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(AgendamentosPage);
             
 /*             
   __  ____ ____ _  _ 

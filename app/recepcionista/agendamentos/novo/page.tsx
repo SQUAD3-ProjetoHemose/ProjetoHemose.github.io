@@ -6,7 +6,7 @@ import { withProtectedRoute } from '@/hooks/useAuthentication';
 import useAgendamentoStore from '@/store/agendamentoStore';
 import usePacienteStore from '@/store/pacienteStore';
 import useUserStore from '@/store/userStore';
-import { AgendamentoForm, TipoAgendamento, StatusAgendamento } from '@/types';
+import { AgendamentoForm, TipoAgendamento, StatusAgendamento, UserRole } from '@/types';
 import { format } from 'date-fns';
 
 // Interface para os dados do formulário de novo paciente
@@ -629,7 +629,7 @@ function NovoAgendamentoPage() {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withProtectedRoute(['recepcionista', 'admin'])(NovoAgendamentoPage);
+export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(NovoAgendamentoPage);
             
 /*             
   __  ____ ____ _  _ 

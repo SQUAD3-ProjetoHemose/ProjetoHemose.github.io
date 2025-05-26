@@ -6,7 +6,7 @@ import usePacienteStore from '@/store/pacienteStore';
 import { useAuthentication } from '@/hooks';
 
 // Interface para agendamentos futuros
-interface Agendamento {
+interface AgendamentoFuturo {
   id: number;
   data: string;
   horario: string;
@@ -21,6 +21,10 @@ function RecepcionistaDashboardPage() {
   
   // Estados para armazenar dados dinâmicos da recepção
   const [stats, setStats] = useState<Stats>({
+    pacientesInternados: 0,
+    pacientesTriagem: 0,
+    medicamentosAdministrar: 0,
+    leitosDisponiveis: 0,
     pacientesHoje: 0,
     agendamentosHoje: 0,
     pacientesAguardando: 0,
@@ -28,7 +32,7 @@ function RecepcionistaDashboardPage() {
   });
 
   const [filaEspera, setFilaEspera] = useState<FilaEspera[]>([]);
-  const [proximosAgendamentos, setProximosAgendamentos] = useState<Agendamento[]>([]);
+  const [proximosAgendamentos, setProximosAgendamentos] = useState<AgendamentoFuturo[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const { pacientes, fetchPacientes, loading: loadingPacientes } = usePacienteStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,6 +48,10 @@ function RecepcionistaDashboardPage() {
         
         // Dados estatísticos - simulados mas baseados em dados reais quando possível
         setStats({
+          pacientesInternados: Math.floor(Math.random() * 15) + 5,
+          pacientesTriagem: Math.floor(Math.random() * 8) + 2,
+          medicamentosAdministrar: Math.floor(Math.random() * 20) + 10,
+          leitosDisponiveis: Math.floor(Math.random() * 12) + 3,
           pacientesHoje: pacientes.length > 0 ? Math.min(pacientes.length * 2, 24) : 24,
           agendamentosHoje: pacientes.length > 0 ? Math.min(pacientes.length * 3, 35) : 35,
           pacientesAguardando: pacientes.length > 0 ? Math.min(pacientes.length / 2, 6) : 6,
@@ -52,12 +60,61 @@ function RecepcionistaDashboardPage() {
 
         // Fila de espera - utilizando nomes de pacientes reais quando disponíveis
         setFilaEspera([
-          { id: 1, nome: pacientes[0]?.nome || 'José Silva', horario: '11:30', tipo: 'Consulta', medico: 'Dr. Carlos Santos', status: 'Aguardando' },
-          { id: 2, nome: pacientes[1]?.nome || 'Fernanda Lima', horario: '11:45', tipo: 'Retorno', medico: 'Dra. Ana Oliveira', status: 'Triagem' },
-          { id: 3, nome: pacientes[2]?.nome || 'Ricardo Souza', horario: '12:00', tipo: 'Exame', medico: 'Dr. Paulo Mendes', status: 'Aguardando' },
-          { id: 4, nome: pacientes[3]?.nome || 'Camila Ferreira', horario: '12:15', tipo: 'Consulta', medico: 'Dra. Mariana Costa', status: 'Aguardando' },
-          { id: 5, nome: pacientes[4]?.nome || 'Eduardo Martins', horario: '12:30', tipo: 'Consulta', medico: 'Dr. Carlos Santos', status: 'Aguardando' },
-          { id: 6, nome: pacientes[5]?.nome || 'Luciana Alves', horario: '12:45', tipo: 'Retorno', medico: 'Dra. Ana Oliveira', status: 'Aguardando' },
+          { 
+            id: 1, 
+            nome: pacientes[0]?.nome || 'José Silva', 
+            horario: '11:30', 
+            tipo: 'Consulta', 
+            medico: 'Dr. Carlos Santos', 
+            status: 'Aguardando',
+            prioridade: 'Normal',
+            chegada: '11:25'
+          },
+          { 
+            id: 2, 
+            nome: pacientes[1]?.nome || 'Fernanda Lima', 
+            horario: '11:45', 
+            tipo: 'Retorno', 
+            medico: 'Dra. Ana Oliveira', 
+            status: 'Triagem',
+            prioridade: 'Alta'
+          },
+          { 
+            id: 3, 
+            nome: pacientes[2]?.nome || 'Ricardo Souza', 
+            horario: '12:00', 
+            tipo: 'Exame', 
+            medico: 'Dr. Paulo Mendes', 
+            status: 'Aguardando',
+            prioridade: 'Normal'
+          },
+          { 
+            id: 4, 
+            nome: pacientes[3]?.nome || 'Camila Ferreira', 
+            horario: '12:15', 
+            tipo: 'Consulta', 
+            medico: 'Dra. Mariana Costa', 
+            status: 'Aguardando',
+            prioridade: 'Urgente'
+          },
+          { 
+            id: 5, 
+            nome: pacientes[4]?.nome || 'Eduardo Martins', 
+            horario: '12:30', 
+            tipo: 'Consulta', 
+            medico: 'Dr. Carlos Santos', 
+            status: 'Aguardando',
+            prioridade: 'Baixa'
+          },
+          { 
+            id: 6, 
+            nome: pacientes[5]?.nome || 'Luciana Alves', 
+            horario: '12:45', 
+            tipo: 'Retorno', 
+            medico: 'Dra. Ana Oliveira', 
+            status: 'Aguardando',
+            prioridade: 'Normal'
+          },
         ]);
 
         // Agendamentos futuros - utilizando nomes de pacientes reais quando disponíveis
@@ -74,7 +131,18 @@ function RecepcionistaDashboardPage() {
     };
 
     carregarDados();
-  }, [fetchPacientes, pacientes.length]); // Updated dependencies
+  }, [fetchPacientes, pacientes.length]);
+
+  // Função para obter cor da prioridade
+  const getPrioridadeColor = (prioridade?: string) => {
+    switch (prioridade) {
+      case 'Urgente': return 'bg-red-100 text-red-800';
+      case 'Alta': return 'bg-orange-100 text-orange-800';
+      case 'Normal': return 'bg-blue-100 text-blue-800';
+      case 'Baixa': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   // Exibe loader enquanto os dados estão carregando
   if (isLoading || loadingPacientes) {
@@ -172,6 +240,9 @@ function RecepcionistaDashboardPage() {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                    Prioridade
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Ação
                   </th>
                 </tr>
@@ -181,6 +252,9 @@ function RecepcionistaDashboardPage() {
                   <tr key={paciente.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-black">{paciente.nome}</div>
+                      {paciente.chegada && (
+                        <div className="text-xs text-gray-500">Chegou: {paciente.chegada}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-black">{paciente.horario}</div>
@@ -192,13 +266,21 @@ function RecepcionistaDashboardPage() {
                       <div className="text-sm text-black">{paciente.medico}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${paciente.status === 'Aguardando' ? 'bg-purple-100 text-black' :
-                          paciente.status === 'Triagem' ? 'bg-purple-200 text-black' :
-                            paciente.status === 'Em Atendimento' ? 'bg-purple-300 text-black' :
-                              'bg-purple-100 text-black'
-                        }`}>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        paciente.status === 'Aguardando' ? 'bg-purple-100 text-black' :
+                        paciente.status === 'Triagem' ? 'bg-purple-200 text-black' :
+                        paciente.status === 'Em Atendimento' ? 'bg-purple-300 text-black' :
+                        'bg-purple-100 text-black'
+                      }`}>
                         {paciente.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {paciente.prioridade && (
+                        <span className={`px-2 py-1 text-xs rounded-full ${getPrioridadeColor(paciente.prioridade)}`}>
+                          {paciente.prioridade}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button className="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1 rounded text-xs">

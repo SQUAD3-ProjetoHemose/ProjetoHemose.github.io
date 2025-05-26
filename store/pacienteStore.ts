@@ -1,6 +1,6 @@
 // Gerenciador de estado centralizado para pacientes usando Zustand
 import { create } from 'zustand';
-import api from '@/lib/api';
+import { pacientesAPI } from '@/lib/api';
 import { Paciente } from '@/types';
 
 interface PacienteState {
@@ -31,11 +31,11 @@ const usePacienteStore = create<PacienteState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.get<Paciente[]>('/paciente');
-      set({ pacientes: response.data });
-      return response.data;
+      const response = await pacientesAPI.getAll();
+      set({ pacientes: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao buscar pacientes';
+      const message = err.message || 'Erro ao buscar pacientes';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -47,11 +47,11 @@ const usePacienteStore = create<PacienteState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.get<Paciente>(`/paciente/${id}`);
-      set({ pacienteSelecionado: response.data });
-      return response.data;
+      const response = await pacientesAPI.getById(Number(id));
+      set({ pacienteSelecionado: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao buscar paciente';
+      const message = err.message || 'Erro ao buscar paciente';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -63,13 +63,13 @@ const usePacienteStore = create<PacienteState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.post<Paciente>('/paciente', pacienteData);
+      const response = await pacientesAPI.create(pacienteData);
       set(state => ({ 
-        pacientes: [...state.pacientes, response.data]
+        pacientes: [...state.pacientes, response]
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao criar paciente';
+      const message = err.message || 'Erro ao criar paciente';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -81,14 +81,14 @@ const usePacienteStore = create<PacienteState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch<Paciente>(`/paciente/${id}`, pacienteData);
+      const response = await pacientesAPI.update(Number(id), pacienteData);
       set(state => ({ 
-        pacientes: state.pacientes.map(p => p.id === id ? response.data : p),
-        pacienteSelecionado: state.pacienteSelecionado?.id === id ? response.data : state.pacienteSelecionado
+        pacientes: state.pacientes.map(p => p.id === Number(id) ? response : p),
+        pacienteSelecionado: state.pacienteSelecionado?.id === Number(id) ? response : state.pacienteSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao atualizar paciente';
+      const message = err.message || 'Erro ao atualizar paciente';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -100,14 +100,14 @@ const usePacienteStore = create<PacienteState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      await api.delete(`/paciente/${id}`);
+      await pacientesAPI.delete(Number(id));
       set(state => ({
-        pacientes: state.pacientes.filter(p => p.id !== id),
-        pacienteSelecionado: state.pacienteSelecionado?.id === id ? null : state.pacienteSelecionado
+        pacientes: state.pacientes.filter(p => p.id !== Number(id)),
+        pacienteSelecionado: state.pacienteSelecionado?.id === Number(id) ? null : state.pacienteSelecionado
       }));
       return true;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao excluir paciente';
+      const message = err.message || 'Erro ao excluir paciente';
       set({ error: message });
       throw new Error(message);
     } finally {

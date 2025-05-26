@@ -3,18 +3,27 @@ import { useState, useCallback, useMemo } from 'react';
 import { format, parseISO, differenceInYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import usePacienteStore from '@/store/pacienteStore';
-import { Paciente } from '@/types';
+import { Paciente, CreatePacienteDto } from '@/types';
 
 // Hook para formulário de paciente
 export const usePacienteForm = (pacienteInicial?: Partial<Paciente>) => {
-  // Estado local do formulário
-  const [formData, setFormData] = useState<Partial<Paciente>>({
+  // Estado local do formulário usando a estrutura correta
+  const [formData, setFormData] = useState<Partial<CreatePacienteDto & { status?: string; leito?: string; sinaisVitais?: string }>>({
     nome: pacienteInicial?.nome || '',
     cpf: pacienteInicial?.cpf || '',
-    dataNascimento: pacienteInicial?.dataNascimento || '',
+    data_nascimento: pacienteInicial?.data_nascimento || '',
+    sexo: pacienteInicial?.sexo || 'M',
     telefone: pacienteInicial?.telefone || '',
+    email: pacienteInicial?.email || '',
     endereco: pacienteInicial?.endereco || '',
-    idade: pacienteInicial?.idade || 0,
+    cidade: pacienteInicial?.cidade || '',
+    estado: pacienteInicial?.estado || '',
+    cep: pacienteInicial?.cep || '',
+    contato_emergencia_nome: pacienteInicial?.contato_emergencia_nome || '',
+    contato_emergencia_telefone: pacienteInicial?.contato_emergencia_telefone || '',
+    observacoes: pacienteInicial?.observacoes || '',
+    ativo: pacienteInicial?.ativo ?? true,
+    // Campos adicionais do frontend
     leito: pacienteInicial?.leito || '',
     status: pacienteInicial?.status || 'ativo',
     sinaisVitais: pacienteInicial?.sinaisVitais || ''
@@ -23,29 +32,32 @@ export const usePacienteForm = (pacienteInicial?: Partial<Paciente>) => {
   // Acesso às ações do store
   const { createPaciente, updatePaciente } = usePacienteStore();
 
+  // Calcular idade baseado na data de nascimento
+  const calcularIdade = useCallback((dataNascimento: string) => {
+    if (!dataNascimento) return 0;
+    try {
+      const data = parseISO(dataNascimento);
+      return differenceInYears(new Date(), data);
+    } catch (error) {
+      return 0;
+    }
+  }, []);
+
   // Tratamento de mudanças no formulário
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     
-    // Cálculo automático da idade quando a data de nascimento é alterada
-    if (name === 'dataNascimento' && value) {
-      try {
-        const dataNascimento = parseISO(value);
-        const idade = differenceInYears(new Date(), dataNascimento);
-        setFormData(prev => ({ ...prev, [name]: value, idade }));
-      } catch (error) {
-        setFormData(prev => ({ ...prev, [name]: value }));
-      }
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   }, []);
 
   // Função para lidar com mudanças em datas usando componentes de data específicos
   const handleDateChange = useCallback((date: Date) => {
     const formattedDate = format(date, 'yyyy-MM-dd');
-    const idade = differenceInYears(new Date(), date);
-    setFormData(prev => ({ ...prev, dataNascimento: formattedDate, idade }));
+    setFormData(prev => ({ ...prev, data_nascimento: formattedDate }));
   }, []);
 
   // Tratamento de submissão do formulário
@@ -71,10 +83,18 @@ export const usePacienteForm = (pacienteInicial?: Partial<Paciente>) => {
     setFormData({
       nome: '',
       cpf: '',
-      dataNascimento: '',
+      data_nascimento: '',
+      sexo: 'M',
       telefone: '',
+      email: '',
       endereco: '',
-      idade: 0,
+      cidade: '',
+      estado: '',
+      cep: '',
+      contato_emergencia_nome: '',
+      contato_emergencia_telefone: '',
+      observacoes: '',
+      ativo: true,
       leito: '',
       status: 'ativo',
       sinaisVitais: ''
@@ -117,6 +137,12 @@ export const usePacienteForm = (pacienteInicial?: Partial<Paciente>) => {
     return true;
   }, []);
 
+  // Validar email
+  const validarEmail = useCallback((email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }, []);
+
   return {
     formData,
     setFormData,
@@ -124,7 +150,9 @@ export const usePacienteForm = (pacienteInicial?: Partial<Paciente>) => {
     handleDateChange,
     handleSubmit,
     resetForm,
-    validarCPF
+    validarCPF,
+    validarEmail,
+    calcularIdade
   };
 };
 
@@ -134,6 +162,8 @@ export const usePacienteManager = () => {
   const [filtroNome, setFiltroNome] = useState<string>('');
   const [filtroCPF, setFiltroCPF] = useState<string>('');
   const [filtroStatus, setFiltroStatus] = useState<string | null>(null);
+  const [filtroSexo, setFiltroSexo] = useState<'M' | 'F' | null>(null);
+  const [filtroAtivo, setFiltroAtivo] = useState<boolean | null>(null);
 
   // Acesso ao estado e ações da store
   const { 
@@ -196,6 +226,17 @@ export const usePacienteManager = () => {
     return telefone;
   }, []);
 
+  // Calcular idade do paciente
+  const calcularIdade = useCallback((dataNascimento?: string) => {
+    if (!dataNascimento) return 0;
+    try {
+      const data = parseISO(dataNascimento);
+      return differenceInYears(new Date(), data);
+    } catch (error) {
+      return 0;
+    }
+  }, []);
+
   // Pacientes filtrados
   const pacientesFiltrados = useMemo(() => {
     let resultado = [...pacientes];
@@ -217,9 +258,21 @@ export const usePacienteManager = () => {
         p.status === filtroStatus
       );
     }
+
+    if (filtroSexo) {
+      resultado = resultado.filter(p => 
+        p.sexo === filtroSexo
+      );
+    }
+
+    if (filtroAtivo !== null) {
+      resultado = resultado.filter(p => 
+        p.ativo === filtroAtivo
+      );
+    }
     
     return resultado;
-  }, [pacientes, filtroNome, filtroCPF, filtroStatus]);
+  }, [pacientes, filtroNome, filtroCPF, filtroStatus, filtroSexo, filtroAtivo]);
 
   return {
     // Estado
@@ -235,6 +288,13 @@ export const usePacienteManager = () => {
     setFiltroCPF,
     filtroStatus,
     setFiltroStatus,
+    filtroSexo,
+    setFiltroSexo,
+    filtroAtivo,
+    setFiltroAtivo,
+    
+    // Dados filtrados
+    pacientesFiltrados,
     
     // Ações
     buscarPacientes,
@@ -243,12 +303,13 @@ export const usePacienteManager = () => {
     
     // Utilitários
     formatarData,
-    formatarCPF
+    formatarCPF,
+    formatarTelefone,
+    calcularIdade
   };
 };
-            
-            
-/*             
+
+/* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
 /    \___ \___ ) \/ (

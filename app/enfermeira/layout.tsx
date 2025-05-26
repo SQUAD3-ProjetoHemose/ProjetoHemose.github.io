@@ -2,6 +2,7 @@
 
 import EnfermeiraLayout from '@/components/layout/EnfermeiraLayout';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
+import { UserRole } from '@/types';
 
 // Função de layout principal para enfermeira
 function EnfermeiraRootLayout({
@@ -13,7 +14,7 @@ function EnfermeiraRootLayout({
   return <EnfermeiraLayout>{children}</EnfermeiraLayout>; 
 }
 
-export default withProtectedRoute(['enfermeira'])(EnfermeiraRootLayout);
+export default withProtectedRoute([UserRole.ENFERMEIRA])(EnfermeiraRootLayout);
 
 /*
             

@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
-import { Stats, Atendimento } from '@/types';
+import { Stats, UserRole } from '@/types';
 import usePacienteStore from '@/store/pacienteStore';
 import { useAuthentication } from '@/hooks';
+
+// Interface para atendimentos próximos
+interface ProximoAtendimento {
+  id: number;
+  nome: string;
+  horario: string;
+  tipo: string;
+}
 
 // Interface para atividades recentes
 interface AtividadeMedica {
@@ -19,13 +27,17 @@ function MedicoDashboardPage() {
   
   // Estados para armazenar dados dinâmicos do médico
   const [stats, setStats] = useState<Stats>({
-    pacientesHoje: 0,
-    prescricoesAtivas: 0,
-    internacoesAtivas: 0,
-    totalPacientes: 0
+    pacientesInternados: 0,
+    pacientesTriagem: 0,
+    medicamentosAdministrar: 0,
+    leitosDisponiveis: 0,
+    totalConsultas: 0,
+    consultasRealizadas: 0,
+    consultasCanceladas: 0,
+    totalAtendimentos: 0
   });
 
-  const [proximosAtendimentos, setProximosAtendimentos] = useState<Atendimento[]>([]);
+  const [proximosAtendimentos, setProximosAtendimentos] = useState<ProximoAtendimento[]>([]);
   const [atividades, setAtividades] = useState<AtividadeMedica[]>([]);
   const { fetchPacientes, pacientes, loading: loadingPacientes } = usePacienteStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -42,10 +54,14 @@ function MedicoDashboardPage() {
         // Em uma aplicação real, estes dados viriam de endpoints específicos
         // Por enquanto, vamos calcular baseado nos dados que temos ou simular
         setStats({
-          totalPacientes: pacientes.length,
-          pacientesHoje: Math.floor(Math.random() * 15) + 5, // Simulando entre 5 e 20 pacientes hoje
-          prescricoesAtivas: Math.floor(Math.random() * 30) + 10, // Simulando entre 10 e 40 prescrições
-          internacoesAtivas: Math.floor(Math.random() * 10) + 3 // Simulando entre 3 e 13 internações
+          pacientesInternados: Math.floor(Math.random() * 15) + 5, // Simulando entre 5 e 20 pacientes internados
+          pacientesTriagem: Math.floor(Math.random() * 8) + 2, // Simulando entre 2 e 10 pacientes em triagem
+          medicamentosAdministrar: Math.floor(Math.random() * 25) + 10, // Simulando entre 10 e 35 medicamentos
+          leitosDisponiveis: Math.floor(Math.random() * 12) + 3, // Simulando entre 3 e 15 leitos disponíveis
+          totalConsultas: pacientes.length,
+          consultasRealizadas: Math.floor(pacientes.length * 0.8), // 80% das consultas realizadas
+          consultasCanceladas: Math.floor(pacientes.length * 0.1), // 10% canceladas
+          totalAtendimentos: Math.floor(Math.random() * 50) + 20 // Simulando entre 20 e 70 atendimentos
         });
         
         // Próximos atendimentos simulados, em uma app real viriam da API de agendamentos
@@ -71,7 +87,7 @@ function MedicoDashboardPage() {
     };
 
     carregarDadosMedico();
-  }, [fetchPacientes]); // Updated dependency
+  }, [fetchPacientes, pacientes.length]);
 
   // Exibe loader enquanto os dados estão carregando
   if (isLoading || loadingPacientes) {
@@ -94,23 +110,23 @@ function MedicoDashboardPage() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black">Total de Pacientes</h2>
-          <p className="text-3xl font-bold text-black">{stats.totalPacientes}</p>
+          <h2 className="text-lg font-semibold text-black">Total de Consultas</h2>
+          <p className="text-3xl font-bold text-black">{stats.totalConsultas}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black">Pacientes Hoje</h2>
-          <p className="text-3xl font-bold text-black">{stats.pacientesHoje}</p>
+          <h2 className="text-lg font-semibold text-black">Consultas Realizadas</h2>
+          <p className="text-3xl font-bold text-black">{stats.consultasRealizadas}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black">Prescrições Ativas</h2>
-          <p className="text-3xl font-bold text-black">{stats.prescricoesAtivas}</p>
+          <h2 className="text-lg font-semibold text-black">Pacientes Internados</h2>
+          <p className="text-3xl font-bold text-black">{stats.pacientesInternados}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black">Internações Ativas</h2>
-          <p className="text-3xl font-bold text-black">{stats.internacoesAtivas}</p>
+          <h2 className="text-lg font-semibold text-black">Total Atendimentos</h2>
+          <p className="text-3xl font-bold text-black">{stats.totalAtendimentos}</p>
         </div>
       </div>
       
@@ -181,7 +197,7 @@ function MedicoDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas médicos
-export default withProtectedRoute(['medico'])(MedicoDashboardPage);
+export default withProtectedRoute([UserRole.MEDICO])(MedicoDashboardPage);
             
 /*             
   __  ____ ____ _  _ 

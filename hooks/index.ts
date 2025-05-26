@@ -1,29 +1,22 @@
-// Arquivo de exportação central para todos os hooks
-import { useAgendamentoForm, useAgendamentoManager } from './useAgendamento';
-import { usePacienteForm, usePacienteManager } from './usePaciente';
-import { useUserForm, useUserManager } from './useUser';
-import { useAuthentication, withProtectedRoute } from './useAuthentication';
+// Exportação centralizada de todos os hooks personalizados
+export { useAuthentication, withProtectedRoute } from './useAuthentication';
+export { useAgendamentos } from './useAgendamentos';
+export { usePacientes } from './usePacientes';
+export { useReports } from './useReports';
+export { useAudit, usePageAudit, withAudit } from './useAudit';
 
-export {
-  // Hooks de agendamentos
-  useAgendamentoForm,
-  useAgendamentoManager,
-  
-  // Hooks de pacientes
-  usePacienteForm,
-  usePacienteManager,
-  
-  // Hooks de usuários
-  useUserForm,
-  useUserManager,
-  
-  // Hooks de autenticação
-  useAuthentication,
-  withProtectedRoute
-};
-            
-            
-/*             
+// Re-exportar tipos importantes
+export type { CreateAgendamentoData, AgendamentoFilters } from './useAgendamentos';
+export type { Paciente, CreatePacienteData } from './usePacientes';
+export type { 
+  DashboardStats, 
+  AgendamentosReport, 
+  PacientesReport, 
+  ProdutividadeReport, 
+  FinanceiroReport 
+} from './useReports';
+
+/* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
 /    \___ \___ ) \/ (

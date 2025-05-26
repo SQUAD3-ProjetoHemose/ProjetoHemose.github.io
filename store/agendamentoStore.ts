@@ -1,7 +1,7 @@
 // Gerenciador de estado centralizado para agendamentos usando Zustand
 import { create } from 'zustand';
 import { format } from 'date-fns';
-import api from '@/lib/api';
+import { agendamentosAPI } from '@/lib/api'; // Corrigido: usar importação nomeada
 import { Agendamento, AgendamentoForm, StatusAgendamento } from '@/types';
 
 interface AgendamentoState {
@@ -39,18 +39,18 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     
     try {
       // Construir os parâmetros da consulta
-      const params = new URLSearchParams();
-      if (data) params.append('data', data);
-      if (medico_id) params.append('medico_id', medico_id.toString());
-      if (paciente_id) params.append('paciente_id', paciente_id.toString());
-      if (status) params.append('status', status);
+      const params: any = {};
+      if (data) params.data = data;
+      if (medico_id) params.medico_id = medico_id;
+      if (paciente_id) params.paciente_id = paciente_id;
+      if (status) params.status = status;
       
-      // Fazer a chamada à API
-      const response = await api.get(`/agendamentos?${params.toString()}`);
-      set({ agendamentos: response.data });
-      return response.data;
+      // Fazer a chamada à API usando agendamentosAPI
+      const response = await agendamentosAPI.getAll(params);
+      set({ agendamentos: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao buscar agendamentos';
+      const message = err.message || 'Erro ao buscar agendamentos';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -62,11 +62,11 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.get('/agendamentos/today');
-      set({ agendamentos: response.data });
-      return response.data;
+      const response = await agendamentosAPI.getToday();
+      set({ agendamentos: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao buscar agendamentos de hoje';
+      const message = err.message || 'Erro ao buscar agendamentos de hoje';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -79,11 +79,11 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     
     try {
       const formattedDate = format(data, 'yyyy-MM-dd');
-      const response = await api.get(`/agendamentos/by-date/${formattedDate}`);
-      set({ agendamentos: response.data });
-      return response.data;
+      const response = await agendamentosAPI.getByDate(formattedDate);
+      set({ agendamentos: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao buscar agendamentos por data';
+      const message = err.message || 'Erro ao buscar agendamentos por data';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -95,11 +95,11 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.get(`/agendamentos/${id}`);
-      set({ agendamentoSelecionado: response.data });
-      return response.data;
+      const response = await agendamentosAPI.getById(id);
+      set({ agendamentoSelecionado: response });
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao buscar agendamento #${id}`;
+      const message = err.message || `Erro ao buscar agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -111,13 +111,13 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.post('/agendamentos', formData);
+      const response = await agendamentosAPI.create(formData);
       set(state => ({ 
-        agendamentos: [...state.agendamentos, response.data] 
+        agendamentos: [...state.agendamentos, response] 
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao criar agendamento';
+      const message = err.message || 'Erro ao criar agendamento';
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -129,14 +129,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch(`/agendamentos/${id}`, formData);
+      const response = await agendamentosAPI.update(id, formData);
       set(state => ({ 
-        agendamentos: state.agendamentos.map(ag => ag.id === id ? response.data : ag),
-        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response.data : state.agendamentoSelecionado
+        agendamentos: state.agendamentos.map(ag => ag.id === id ? response : ag),
+        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response : state.agendamentoSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao atualizar agendamento #${id}`;
+      const message = err.message || `Erro ao atualizar agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -148,14 +148,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch(`/agendamentos/${id}/confirmar`);
+      const response = await agendamentosAPI.confirmar(id);
       set(state => ({ 
-        agendamentos: state.agendamentos.map(ag => ag.id === id ? response.data : ag),
-        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response.data : state.agendamentoSelecionado
+        agendamentos: state.agendamentos.map(ag => ag.id === id ? response : ag),
+        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response : state.agendamentoSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao confirmar agendamento #${id}`;
+      const message = err.message || `Erro ao confirmar agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -167,14 +167,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch(`/agendamentos/${id}/cancelar`);
+      const response = await agendamentosAPI.cancelar(id);
       set(state => ({ 
-        agendamentos: state.agendamentos.map(ag => ag.id === id ? response.data : ag),
-        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response.data : state.agendamentoSelecionado
+        agendamentos: state.agendamentos.map(ag => ag.id === id ? response : ag),
+        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response : state.agendamentoSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao cancelar agendamento #${id}`;
+      const message = err.message || `Erro ao cancelar agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -186,14 +186,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch(`/agendamentos/${id}/realizar`);
+      const response = await agendamentosAPI.realizar(id);
       set(state => ({ 
-        agendamentos: state.agendamentos.map(ag => ag.id === id ? response.data : ag),
-        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response.data : state.agendamentoSelecionado
+        agendamentos: state.agendamentos.map(ag => ag.id === id ? response : ag),
+        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response : state.agendamentoSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao marcar agendamento #${id} como realizado`;
+      const message = err.message || `Erro ao marcar agendamento #${id} como realizado`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -205,14 +205,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const response = await api.patch(`/agendamentos/${id}/falta`);
+      const response = await agendamentosAPI.registrarFalta(id);
       set(state => ({ 
-        agendamentos: state.agendamentos.map(ag => ag.id === id ? response.data : ag),
-        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response.data : state.agendamentoSelecionado
+        agendamentos: state.agendamentos.map(ag => ag.id === id ? response : ag),
+        agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? response : state.agendamentoSelecionado
       }));
-      return response.data;
+      return response;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao registrar falta no agendamento #${id}`;
+      const message = err.message || `Erro ao registrar falta no agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {
@@ -224,14 +224,14 @@ const useAgendamentoStore = create<AgendamentoState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      await api.delete(`/agendamentos/${id}`);
+      await agendamentosAPI.delete(id);
       set(state => ({ 
         agendamentos: state.agendamentos.filter(ag => ag.id !== id),
         agendamentoSelecionado: state.agendamentoSelecionado?.id === id ? null : state.agendamentoSelecionado
       }));
       return true;
     } catch (err: any) {
-      const message = err.response?.data?.message || `Erro ao excluir agendamento #${id}`;
+      const message = err.message || `Erro ao excluir agendamento #${id}`;
       set({ error: message });
       throw new Error(message);
     } finally {

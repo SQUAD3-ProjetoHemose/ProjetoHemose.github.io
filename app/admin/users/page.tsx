@@ -1,375 +1,419 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import useUserStore from '@/store/userStore';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
-import { User, UserRole } from '@/types';
-import { useAuthentication } from '@/hooks';
-import { useUserForm } from '@/hooks/useUser';
-
-// Interface para os dados do formulário
-interface FormData {
-  nome: string;
-  email: string;
-  senha?: string; 
-  tipo: UserRole;
-  ativo: boolean;
-}
+import { useUserStore } from '@/store';
+import { UserRole, User, CreateUserDto } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Users, 
+  UserPlus, 
+  Search, 
+  Edit,
+  Trash2,
+  Eye,
+  Filter
+} from 'lucide-react';
 
 function AdminUsersPage() {
-  // Obter o usuário do contexto de autenticação
-  const { user } = useAuthentication();
-  
-  const [activeTab, setActiveTab] = useState<'todos' | UserRole>('todos');
-  const [showModal, setShowModal] = useState<boolean>(false);
+  // Estado do store de usuários
+  const {
+    users,
+    loading,
+    error,
+    fetchUsers,
+    createUser,
+    updateUser,
+    deleteUser
+  } = useUserStore();
+
+  // Estado local do componente
+  const [activeTab, setActiveTab] = useState('todos');
+  const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<FormData>({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState<CreateUserDto>({
     nome: '',
     email: '',
     senha: '',
-    tipo: 'medico',
+    tipo: UserRole.MEDICO,
     ativo: true
   });
-  
-  const { 
-    users, 
-    loading, 
-    error, 
-    fetchUsers, 
-    createUser, 
-    updateUser, 
-    deleteUser 
-  } = useUserStore();
 
+  // Buscar usuários na inicialização
   useEffect(() => {
-    // Carrega a lista de usuários quando o componente é montado
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const handleTabChange = async (tab: 'todos' | UserRole) => {
-    setActiveTab(tab);
-    if (tab === 'todos') {
-      await fetchUsers();
-    } else {
-      await fetchUsers(tab);
-    }
-  };
+  // Filtrar usuários usando os dados do store
+  const filteredUsers = users.filter(user => {
+    const matchSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchTab = activeTab === 'todos' || user.tipo === activeTab;
+    return matchSearch && matchTab;
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-  };
-
+  // Abrir modal para criar usuário
   const openCreateModal = () => {
     setEditingUser(null);
     setFormData({
       nome: '',
       email: '',
       senha: '',
-      tipo: 'medico',
+      tipo: UserRole.MEDICO,
       ativo: true
     });
     setShowModal(true);
   };
 
+  // Abrir modal para editar usuário
   const openEditModal = (user: User) => {
     setEditingUser(user);
     setFormData({
       nome: user.nome,
       email: user.email,
-      senha: '', // Não preencher senha ao editar
+      senha: '',
       tipo: user.tipo,
-      ativo: user.ativo
+      ativo: user.ativo,
+      especialidade: user.especialidade,
+      crm: user.crm,
+      coren: user.coren
     });
     setShowModal(true);
   };
 
+  // Manipular mudanças no formulário
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Submeter formulário usando o store
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       if (editingUser) {
-        // Se senha estiver vazia, remova do objeto para não atualizar
-        const dataToUpdate = {...formData};
-        if (!dataToUpdate.senha) {
-          delete dataToUpdate.senha;
+        // Se editando e senha vazia, remover do payload
+        if (!formData.senha) {
+          const { senha, ...payload } = formData;
+          await updateUser(editingUser.id, payload);
+        } else {
+          await updateUser(editingUser.id, formData);
         }
-        await updateUser(editingUser.id, dataToUpdate);
       } else {
         await createUser(formData);
       }
+      
       setShowModal(false);
-      await fetchUsers(activeTab !== 'todos' ? activeTab : null);
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
     }
   };
 
-  const handleDelete = async (userId: number | string) => {
-    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
-      try {
-        await deleteUser(userId);
-        await fetchUsers(activeTab !== 'todos' ? activeTab : null);
-      } catch (error) {
-        console.error('Erro ao excluir usuário:', error);
-      }
+  // Excluir usuário usando o store
+  const handleDelete = async (userId: number) => {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) {
+      return;
+    }
+
+    try {
+      await deleteUser(userId);
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
     }
   };
 
-  const filteredUsers = activeTab === 'todos' 
-    ? users 
-    : users.filter(user => user.tipo === activeTab);
-
-  // Função para determinar o nome de exibição do tipo de usuário
-  const getUserTypeName = (tipo: UserRole): string => {
-    switch (tipo) {
-      case 'admin': return 'Administrador';
-      case 'medico': return 'Médico';
-      case 'enfermeira': return 'Enfermeira';
-      case 'recepcionista': return 'Recepcionista';
-      default: return tipo;
-    }
+  // Obter nome do tipo de usuário
+  const getUserTypeName = (tipo: UserRole) => {
+    const types = {
+      [UserRole.ADMIN]: 'Administrador',
+      [UserRole.MEDICO]: 'Médico',
+      [UserRole.ENFERMEIRA]: 'Enfermeira',
+      [UserRole.RECEPCIONISTA]: 'Recepcionista'
+    };
+    return types[tipo] || tipo;
   };
 
-  // Função para determinar a classe de cor baseada no tipo de usuário
-  const getUserTypeColorClass = (tipo: UserRole): string => {
-    switch (tipo) {
-      case 'admin': return 'bg-purple-100 text-purple-800';
-      case 'medico': return 'bg-blue-100 text-blue-800';
-      case 'enfermeira': return 'bg-green-100 text-green-800';
-      case 'recepcionista': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  // Obter cor do badge do tipo
+  const getUserTypeColor = (tipo: UserRole) => {
+    const colors = {
+      [UserRole.ADMIN]: 'bg-purple-100 text-purple-800',
+      [UserRole.MEDICO]: 'bg-blue-100 text-blue-800',
+      [UserRole.ENFERMEIRA]: 'bg-green-100 text-green-800',
+      [UserRole.RECEPCIONISTA]: 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[tipo] || 'bg-gray-100 text-gray-800';
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-700">Olá, {user?.nome}</span>
-            <button 
-              onClick={() => window.location.href = '/logout'} 
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Sair
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
+        <Button onClick={openCreateModal} className="gap-2">
+          <UserPlus className="h-4 w-4" />
+          Novo Usuário
+        </Button>
+      </div>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => handleTabChange('todos')}
-                className={`${
-                  activeTab === 'todos'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => handleTabChange('medico')}
-                className={`${
-                  activeTab === 'medico'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Médicos
-              </button>
-              <button
-                onClick={() => handleTabChange('enfermeira')}
-                className={`${
-                  activeTab === 'enfermeira'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Enfermeiras
-              </button>
-              <button
-                onClick={() => handleTabChange('recepcionista')}
-                className={`${
-                  activeTab === 'recepcionista'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Recepcionistas
-              </button>
-            </nav>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={openCreateModal}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Adicionar Usuário
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center mt-8">
-              <p>Carregando...</p>
+      {/* Filtros e busca */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Campo de busca */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
-          ) : error ? (
-            <div className="bg-red-100 p-4 mt-6 rounded-md">
-              <p className="text-red-700">{error}</p>
-            </div>
-          ) : (
-            <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <li key={user.id}>
-                      <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">{user.nome}</h3>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                          <div className="mt-1 flex items-center">
-                            <span className={`px-2 py-1 text-xs rounded-full ${getUserTypeColorClass(user.tipo)}`}>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs de filtro por tipo */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+          <TabsTrigger value={UserRole.MEDICO}>Médicos</TabsTrigger>
+          <TabsTrigger value={UserRole.ENFERMEIRA}>Enfermeiras</TabsTrigger>
+          <TabsTrigger value={UserRole.RECEPCIONISTA}>Recepcionistas</TabsTrigger>
+          <TabsTrigger value={UserRole.ADMIN}>Administradores</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab}>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Usuários ({filteredUsers.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center text-red-600">
+                  <p>{error}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-gray-900">{user.nome}</h3>
+                            <Badge className={getUserTypeColor(user.tipo)}>
                               {getUserTypeName(user.tipo)}
-                            </span>
-                            <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                              user.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            </Badge>
+                            <Badge className={user.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                               {user.ativo ? 'Ativo' : 'Inativo'}
-                            </span>
+                            </Badge>
                           </div>
+                          
+                          <p className="text-sm text-gray-600 mb-1">{user.email}</p>
+                          
+                          {user.especialidade && (
+                            <p className="text-sm text-gray-500">Especialidade: {user.especialidade}</p>
+                          )}
+                          
+                          {user.crm && (
+                            <p className="text-sm text-gray-500">CRM: {user.crm}</p>
+                          )}
+                          
+                          {user.coren && (
+                            <p className="text-sm text-gray-500">COREN: {user.coren}</p>
+                          )}
+                          
+                          <p className="text-xs text-gray-400 mt-2">
+                            Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          </p>
                         </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openEditModal(user)}
-                            className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                          >
-                            Editar
-                          </button>
-                          <button
+
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => openEditModal(user)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
                             onClick={() => handleDelete(user.id)}
-                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            className="text-red-600 hover:text-red-700"
                           >
-                            Excluir
-                          </button>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                    </li>
-                  ))
-                ) : (
-                  <li className="px-4 py-4 sm:px-6">
-                    <p className="text-gray-500">Nenhum usuário encontrado.</p>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-        </div>
-      </main>
+                    </div>
+                  ))}
+
+                  {filteredUsers.length === 0 && (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">Nenhum usuário encontrado.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Modal para criar/editar usuário */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">
-              {editingUser ? 'Editar Usuário' : 'Adicionar Usuário'}
+              {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
             </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nome">
-                  Nome
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome *
                 </label>
                 <input
                   type="text"
-                  id="nome"
                   name="nome"
                   value={formData.nome}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                  Email
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
                 </label>
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="senha">
-                  Senha {editingUser && "(deixe em branco para manter a atual)"}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha {editingUser && '(deixe em branco para manter)'}
                 </label>
                 <input
                   type="password"
-                  id="senha"
                   name="senha"
                   value={formData.senha}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required={!editingUser}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="tipo">
-                  Tipo de Usuário
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Usuário *
                 </label>
                 <select
-                  id="tipo"
                   name="tipo"
                   value={formData.tipo}
                   onChange={handleInputChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="medico">Médico</option>
-                  <option value="enfermeira">Enfermeira</option>
-                  <option value="recepcionista">Recepcionista</option>
-                  <option value="admin">Administrador</option>
+                  <option value={UserRole.MEDICO}>Médico</option>
+                  <option value={UserRole.ENFERMEIRA}>Enfermeira</option>
+                  <option value={UserRole.RECEPCIONISTA}>Recepcionista</option>
+                  <option value={UserRole.ADMIN}>Administrador</option>
                 </select>
               </div>
-              <div className="mb-6 flex items-center">
+
+              {/* Campos específicos para médicos */}
+              {formData.tipo === UserRole.MEDICO && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Especialidade
+                    </label>
+                    <input
+                      type="text"
+                      name="especialidade"
+                      value={formData.especialidade || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CRM
+                    </label>
+                    <input
+                      type="text"
+                      name="crm"
+                      value={formData.crm || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Campo específico para enfermeiras */}
+              {formData.tipo === UserRole.ENFERMEIRA && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    COREN
+                  </label>
+                  <input
+                    type="text"
+                    name="coren"
+                    value={formData.coren || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="ativo"
                   name="ativo"
+                  id="ativo"
                   checked={formData.ativo}
                   onChange={handleInputChange}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label className="ml-2 block text-gray-700 text-sm font-bold" htmlFor="ativo">
-                  Ativo
+                <label htmlFor="ativo" className="ml-2 block text-sm text-gray-700">
+                  Usuário ativo
                 </label>
               </div>
-              <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
                   Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Salvar
-                </button>
+                </Button>
+                <Button type="submit">
+                  {editingUser ? 'Atualizar' : 'Criar'}
+                </Button>
               </div>
             </form>
           </div>
@@ -379,13 +423,11 @@ function AdminUsersPage() {
   );
 }
 
-// HOC para proteger a rota, permitindo apenas administradores
-export default withProtectedRoute(['admin'])(AdminUsersPage);
-            
-            
+export default withProtectedRoute([UserRole.ADMIN])(AdminUsersPage);
+
 /* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
 /    \___ \___ ) \/ (
 \_/\_(____(____|____/
-   */
+*/

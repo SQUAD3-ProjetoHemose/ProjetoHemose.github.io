@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
-import { Paciente } from '@/types';
+import { Paciente, UserRole } from '@/types';
 import { useAuthentication } from '@/hooks';
 import usePacienteStore from '@/store/pacienteStore';
 import { usePacienteForm } from '@/hooks/usePaciente';
@@ -112,7 +112,7 @@ function PacienteDashboardPage() {
     // Adapte os campos conforme necessário
     setNovoPaciente({
       nome: paciente.nome,
-      data_nascimento: paciente.dataNascimento || '',
+      data_nascimento: paciente.data_nascimento || '',
       cpf: paciente.cpf || '',
       telefone: paciente.telefone || '',
       endereco: paciente.endereco || '',
@@ -458,7 +458,7 @@ function PacienteDashboardPage() {
                         CPF: {paciente.cpf ? `${paciente.cpf.substring(0, 3)}.***.***-${paciente.cpf.substring(9, 11)}` : 'Não informado'}
                       </p>
                       <p className="text-sm text-black">
-                        Data Nasc.: {paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : 'Não informada'}
+                        Data Nasc.: {paciente.data_nascimento ? new Date(paciente.data_nascimento).toLocaleDateString('pt-BR') : 'Não informada'}
                       </p>
                       <p className="text-sm text-black">Telefone: {paciente.telefone || 'Não informado'}</p>
                     </div>
@@ -488,7 +488,7 @@ function PacienteDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
-export default withProtectedRoute(['admin', 'enfermeira', 'medico', 'recepcionista'])(PacienteDashboardPage);
+export default withProtectedRoute([UserRole.ADMIN,UserRole.ENFERMEIRA,UserRole.MEDICO])(PacienteDashboardPage);
 /* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \

@@ -2,6 +2,7 @@
 
 import MedicoLayout from '@/components/layout/MedicoLayout';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
+import { UserRole } from '@/types';
 
 // Definindo a tipagem correta das props para o componente
 interface MedicoRootLayoutProps { 
@@ -11,7 +12,7 @@ function MedicoRootLayout({ children }: MedicoRootLayoutProps) { //
   return <MedicoLayout>{children}</MedicoLayout>; // 
 } 
 
-export default withProtectedRoute(['medico'])(MedicoRootLayout);
+export default withProtectedRoute([UserRole.MEDICO])(MedicoRootLayout);
             
 /*             
   __  ____ ____ _  _ 

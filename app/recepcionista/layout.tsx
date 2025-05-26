@@ -2,6 +2,7 @@
 
 import RecepcionistaLayout from "@/components/layout/RecepcionistaLayout";
 import { withProtectedRoute } from "@/hooks/useAuthentication";
+import { UserRole } from "@/types";
 
 // Função de layout principal para recepcionista
 function RecepcionistaRootLayout({
@@ -12,7 +13,7 @@ function RecepcionistaRootLayout({
   return <RecepcionistaLayout>{children}</RecepcionistaLayout>;
 }
 
-export default withProtectedRoute(["recepcionista", "admin"])(
+export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(
   RecepcionistaRootLayout
 );
 
