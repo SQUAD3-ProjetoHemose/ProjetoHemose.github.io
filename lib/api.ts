@@ -438,6 +438,52 @@ export const auditAPI = {
     apiClient.downloadFile('/audit/export/csv', `audit-logs-${new Date().toISOString().split('T')[0]}.csv`),
 };
 
+// Módulo Médico - Atendimentos
+export const medicoAPI = {
+  // Fila de espera e triagem
+  getFilaEspera: () =>
+    apiClient.get<any[]>('/medico/fila-espera'),
+    
+  iniciarAtendimento: (pacienteId: number) =>
+    apiClient.post<any>(`/medico/atendimento/iniciar/${pacienteId}`),
+    
+  finalizarAtendimento: (atendimentoId: number, dados: any) =>
+    apiClient.patch<any>(`/medico/atendimento/finalizar/${atendimentoId}`, dados),
+    
+  // Atestados e documentos
+  criarAtestado: (dados: any) =>
+    apiClient.post<any>('/medico/atestados', dados),
+    
+  getAtestados: (pacienteId?: number) =>
+    apiClient.get<any[]>(`/medico/atestados${pacienteId ? `?pacienteId=${pacienteId}` : ''}`),
+    
+  // Prescrições
+  criarPrescricao: (dados: any) =>
+    apiClient.post<any>('/medico/prescricoes', dados),
+    
+  getPrescricoes: (pacienteId?: number) =>
+    apiClient.get<any[]>(`/medico/prescricoes${pacienteId ? `?pacienteId=${pacienteId}` : ''}`),
+    
+  // Templates de documentos
+  getTemplates: (tipo: 'atestado' | 'prescricao' | 'liberacao') =>
+    apiClient.get<any[]>(`/medico/templates/${tipo}`),
+    
+  salvarTemplate: (dados: any) =>
+    apiClient.post<any>('/medico/templates', dados),
+    
+  // Histórico de pacientes
+  getHistoricoPaciente: (pacienteId: number) =>
+    apiClient.get<any>(`/medico/pacientes/${pacienteId}/historico`),
+    
+  // Dashboard médico
+  getDashboardMedico: () =>
+    apiClient.get<any>('/medico/dashboard'),
+    
+  // Estatísticas do médico
+  getEstatisticasMedico: (periodo?: string) =>
+    apiClient.get<any>(`/medico/estatisticas${periodo ? `?periodo=${periodo}` : ''}`),
+};
+
 /* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
