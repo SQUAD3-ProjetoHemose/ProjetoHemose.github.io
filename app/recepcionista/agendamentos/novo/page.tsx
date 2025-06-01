@@ -56,6 +56,12 @@ function NovoAgendamentoPage() {
     status: StatusAgendamento.AGENDADO
   });
   
+  // Novos estados para pesquisa de paciente
+  const [searchCpf, setSearchCpf] = useState<string>('');
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [foundPaciente, setFoundPaciente] = useState<any | null>(null);
+  
   // Carregar pacientes e médicos
   useEffect(() => {
     const carregarDados = async () => {
@@ -204,6 +210,127 @@ function NovoAgendamentoPage() {
     }
   };
   
+  // Função para formatar CPF na pesquisa
+  const formatarCPFPesquisa = (cpf: string) => {
+    // Remove caracteres não numéricos
+    cpf = cpf.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    cpf = cpf.slice(0, 11);
+    
+    // Formata o CPF
+    if (cpf.length <= 3) {
+      return cpf;
+    } else if (cpf.length <= 6) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    } else if (cpf.length <= 9) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    } else {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+    }
+  };
+
+  // Função para pesquisar paciente por CPF
+  const pesquisarPacientePorCpf = async () => {
+    if (!searchCpf) {
+      setSearchError('Digite um CPF para pesquisar');
+      return;
+    }
+
+    const cpfLimpo = searchCpf.replace(/\D/g, '');
+    
+    if (cpfLimpo.length !== 11) {
+      setSearchError('CPF deve ter 11 dígitos');
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      setSearchError(null);
+      setFoundPaciente(null);
+
+      // Buscar paciente na lista existente primeiro
+      const pacienteExistente = pacientes.find(p => p.cpf.replace(/\D/g, '') === cpfLimpo);
+      
+      if (pacienteExistente) {
+        setFoundPaciente(pacienteExistente);
+        setFormData(prev => ({
+          ...prev,
+          paciente_id: pacienteExistente.id
+        }));
+        setSearchError(null);
+      } else {
+        // Se não encontrar na lista, tentar buscar na API
+        try {
+          const response = await fetch(`/api/pacientes/buscar-cpf/${cpfLimpo}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+
+          if (response.ok) {
+            const pacienteEncontrado = await response.json();
+            setFoundPaciente(pacienteEncontrado);
+            setFormData(prev => ({
+              ...prev,
+              paciente_id: pacienteEncontrado.id
+            }));
+            // Atualizar lista local de pacientes
+            await fetchPacientes();
+          } else if (response.status === 404) {
+            setSearchError('Paciente não encontrado. Você pode cadastrar um novo paciente.');
+            setFoundPaciente(null);
+          } else {
+            setSearchError('Erro ao buscar paciente. Tente novamente.');
+          }
+        } catch (apiError) {
+          setSearchError('Paciente não encontrado na base de dados.');
+          setFoundPaciente(null);
+        }
+      }
+    } catch (error) {
+      console.error('Erro na pesquisa:', error);
+      setSearchError('Erro ao pesquisar paciente. Tente novamente.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Limpar pesquisa de paciente
+  const limparPesquisa = () => {
+    setSearchCpf('');
+    setFoundPaciente(null);
+    setSearchError(null);
+    setFormData(prev => ({
+      ...prev,
+      paciente_id: 0
+    }));
+  };
+
+  // Handler para mudança no campo de pesquisa CPF
+  const handleSearchCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatarCPFPesquisa(e.target.value);
+    setSearchCpf(formattedValue);
+    setSearchError(null);
+    
+    // Limpar paciente encontrado se o usuário começar a digitar novamente
+    if (foundPaciente) {
+      setFoundPaciente(null);
+      setFormData(prev => ({
+        ...prev,
+        paciente_id: 0
+      }));
+    }
+  };
+
+  // Handler para tecla Enter no campo de pesquisa
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      pesquisarPacientePorCpf();
+    }
+  };
+
   // Manipulador de envio do formulário de agendamento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -332,11 +459,81 @@ function NovoAgendamentoPage() {
                 <option value={TipoAgendamento.PROCEDIMENTO}>Procedimento</option>
               </select>
             </div>
+
+            {/* Seção de pesquisa de paciente por CPF */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-black mb-2">
+                Buscar Paciente por CPF
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchCpf}
+                  onChange={handleSearchCpfChange}
+                  onKeyPress={handleSearchKeyPress}
+                  placeholder="Digite o CPF (000.000.000-00)"
+                  className="flex-1 border border-purple-300 rounded-md p-2 focus:ring-purple-500 focus:border-purple-500"
+                  disabled={searchLoading}
+                />
+                <button
+                  type="button"
+                  onClick={pesquisarPacientePorCpf}
+                  disabled={searchLoading || !searchCpf}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                >
+                  {searchLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Buscando...
+                    </div>
+                  ) : (
+                    'Buscar'
+                  )}
+                </button>
+                {(foundPaciente || searchError) && (
+                  <button
+                    type="button"
+                    onClick={limparPesquisa}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+
+              {/* Erro na pesquisa */}
+              {searchError && (
+                <div className="mt-2 p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 text-sm">
+                  {searchError}
+                </div>
+              )}
+
+              {/* Paciente encontrado */}
+              {foundPaciente && (
+                <div className="mt-2 p-3 bg-green-100 border-l-4 border-green-500 rounded-md">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-green-800">Paciente encontrado:</p>
+                      <p className="text-green-700">{foundPaciente.nome}</p>
+                      <p className="text-sm text-green-600">
+                        CPF: {formatarCPFPesquisa(foundPaciente.cpf)} | 
+                        Data Nasc.: {foundPaciente.data_nascimento ? new Date(foundPaciente.data_nascimento).toLocaleDateString('pt-BR') : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="text-green-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             
-            {/* Campo de paciente */}
+            {/* Campo de paciente (dropdown) */}
             <div>
               <label htmlFor="paciente_id" className="block text-sm font-medium text-black mb-2">
-                Paciente
+                Paciente {foundPaciente ? '(Selecionado pela pesquisa)' : ''}
               </label>
               <select
                 id="paciente_id"
@@ -345,12 +542,13 @@ function NovoAgendamentoPage() {
                 onChange={handleInputChange}
                 className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
                 required
+                disabled={!!foundPaciente}
               >
                 <option value={0}>Selecione um paciente</option>
                 {pacientes.length > 0 ? (
                   pacientes.map((paciente) => (
                     <option key={paciente.id} value={paciente.id}>
-                      {paciente.nome}
+                      {paciente.nome} - CPF: {formatarCPFPesquisa(paciente.cpf)}
                     </option>
                   ))
                 ) : (
@@ -359,13 +557,15 @@ function NovoAgendamentoPage() {
                 <option value="novo" className="font-medium text-purple-700">+ Cadastrar Novo Paciente</option>
               </select>
               
-              <button
-                type="button"
-                onClick={() => setShowModal(true)}
-                className="mt-2 text-sm text-purple-700 hover:text-purple-900"
-              >
-                Não encontrou o paciente? Cadastre um novo
-              </button>
+              {!foundPaciente && (
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  className="mt-2 text-sm text-purple-700 hover:text-purple-900"
+                >
+                  Não encontrou o paciente? Cadastre um novo
+                </button>
+              )}
             </div>
             
             {/* Campo de médico */}

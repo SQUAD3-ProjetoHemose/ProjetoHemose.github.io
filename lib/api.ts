@@ -229,22 +229,27 @@ export const usersAPI = {
 // Pacientes
 export const pacientesAPI = {
   getAll: () =>
-    apiClient.get<any[]>('/pacientes'),
+    apiClient.get<any[]>('/paciente'),
     
   getById: (id: number) =>
-    apiClient.get<any>(`/pacientes/${id}`),
+    apiClient.get<any>(`/paciente/${id}`),
     
   create: (pacienteData: any) =>
-    apiClient.post<any>('/pacientes', pacienteData),
+    apiClient.post<any>('/paciente', pacienteData),
     
   update: (id: number, pacienteData: any) =>
-    apiClient.patch<any>(`/pacientes/${id}`, pacienteData),
+    apiClient.patch<any>(`/paciente/${id}`, pacienteData),
     
   delete: (id: number) =>
-    apiClient.delete(`/pacientes/${id}`),
+    apiClient.delete(`/paciente/${id}`),
     
   search: (term: string) =>
     apiClient.get<any[]>(`/pacientes/search?q=${encodeURIComponent(term)}`),
+  
+  // Buscar paciente por CPF
+  getByCpf: async (cpf: string) => {
+    return apiClient.get(`/pacientes/buscar-cpf/${cpf}`);
+  },
 };
 
 // Agendamentos

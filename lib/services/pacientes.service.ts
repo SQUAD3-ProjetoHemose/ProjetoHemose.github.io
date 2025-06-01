@@ -1,113 +1,76 @@
 import { pacientesAPI } from '../api';
-import { 
-  Paciente, 
-  CreatePacienteDto, 
-  UpdatePacienteDto,
-  PaginatedResponse, 
-  PaginationParams 
-} from '../../types';
+
+// Interface para paciente
+interface Paciente {
+  id: number;
+  nome: string;
+  cpf: string;
+  data_nascimento: string;
+  telefone?: string;
+  email?: string;
+  endereco?: string;
+  tipo_sanguineo?: string;
+  alergias?: string;
+  historico_medico?: string;
+  status: string;
+}
 
 export class PacientesService {
-  // Listar todos os pacientes
-  static async getPacientes(params?: PaginationParams): Promise<Paciente[]> {
+  // Buscar todos os pacientes
+  static async getPacientes(): Promise<Paciente[]> {
     return pacientesAPI.getAll();
   }
 
-  // Obter paciente por ID
+  // Buscar paciente por ID
   static async getPacienteById(id: number): Promise<Paciente> {
     return pacientesAPI.getById(id);
   }
 
+  // Buscar paciente por CPF
+  static async getPacienteByCpf(cpf: string): Promise<Paciente> {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    return pacientesAPI.getByCpf(cpfLimpo) as Promise<Paciente>;
+  }
+
   // Criar novo paciente
-  static async createPaciente(pacienteData: CreatePacienteDto): Promise<Paciente> {
-    return pacientesAPI.create(pacienteData);
+  static async criarPaciente(dados: Partial<Paciente>): Promise<Paciente> {
+    return pacientesAPI.create(dados);
   }
 
   // Atualizar paciente
-  static async updatePaciente(id: number, pacienteData: UpdatePacienteDto): Promise<Paciente> {
-    return pacientesAPI.update(id, pacienteData);
+  static async atualizarPaciente(id: number, dados: Partial<Paciente>): Promise<Paciente> {
+    return pacientesAPI.update(id, dados);
   }
 
-  // Excluir paciente
-  static async deletePaciente(id: number): Promise<void> {
-    await pacientesAPI.delete(id);
+  // Deletar paciente
+  static async deletarPaciente(id: number): Promise<void> {
+    return pacientesAPI.delete(id) as Promise<void>;
   }
 
-  // Buscar pacientes por termo
-  static async searchPacientes(term: string): Promise<Paciente[]> {
-    return pacientesAPI.search(term);
-  }
-
-  // Validar CPF
-  static validarCPF(cpf: string): boolean {
-    if (!cpf) return false;
-    
-    const cpfLimpo = cpf.replace(/[^\d]/g, '');
-    
-    if (cpfLimpo.length !== 11) return false;
-    
-    // Verificação de CPFs com todos os dígitos iguais
-    if (/^(\d)\1+$/.test(cpfLimpo)) return false;
-    
-    // Validação dos dígitos verificadores
-    let soma = 0;
-    let resto;
-    
-    for (let i = 1; i <= 9; i++) {
-      soma += parseInt(cpfLimpo.substring(i-1, i)) * (11 - i);
-    }
-    
-    resto = (soma * 10) % 11;
-    if (resto === 10 || resto === 11) resto = 0;
-    if (resto !== parseInt(cpfLimpo.substring(9, 10))) return false;
-    
-    soma = 0;
-    for (let i = 1; i <= 10; i++) {
-      soma += parseInt(cpfLimpo.substring(i-1, i)) * (12 - i);
-    }
-    
-    resto = (soma * 10) % 11;
-    if (resto === 10 || resto === 11) resto = 0;
-    if (resto !== parseInt(cpfLimpo.substring(10, 11))) return false;
-    
-    return true;
-  }
-
-  // Formatar CPF para exibição
+  // Utilitários para formatação
   static formatarCPF(cpf: string): string {
-    if (!cpf) return '';
+    const cpfLimpo = cpf.replace(/\D/g, '');
     
-    const cpfLimpo = cpf.replace(/[^\d]/g, '');
+    if (cpfLimpo.length !== 11) return cpf;
     
-    if (cpfLimpo.length === 11) {
-      return `${cpfLimpo.slice(0, 3)}.${cpfLimpo.slice(3, 6)}.${cpfLimpo.slice(6, 9)}-${cpfLimpo.slice(9)}`;
-    }
-    
-    return cpf;
+    return `${cpfLimpo.slice(0, 3)}.${cpfLimpo.slice(3, 6)}.${cpfLimpo.slice(6, 9)}-${cpfLimpo.slice(9)}`;
   }
 
-  // Formatar telefone para exibição
   static formatarTelefone(telefone: string): string {
-    if (!telefone) return '';
+    const telLimpo = telefone.replace(/\D/g, '');
     
-    const telefoneLimpo = telefone.replace(/[^\d]/g, '');
-    
-    if (telefoneLimpo.length === 11) {
-      return telefoneLimpo.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    } else if (telefoneLimpo.length === 10) {
-      return telefoneLimpo.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    if (telLimpo.length === 11) {
+      return `(${telLimpo.slice(0, 2)}) ${telLimpo.slice(2, 7)}-${telLimpo.slice(7)}`;
+    } else if (telLimpo.length === 10) {
+      return `(${telLimpo.slice(0, 2)}) ${telLimpo.slice(2, 6)}-${telLimpo.slice(6)}`;
     }
     
     return telefone;
   }
 
-  // Calcular idade a partir da data de nascimento
   static calcularIdade(dataNascimento: string): number {
-    if (!dataNascimento) return 0;
-    
     const hoje = new Date();
     const nascimento = new Date(dataNascimento);
-    
     let idade = hoje.getFullYear() - nascimento.getFullYear();
     const mesAtual = hoje.getMonth();
     const mesNascimento = nascimento.getMonth();
@@ -117,6 +80,34 @@ export class PacientesService {
     }
     
     return idade;
+  }
+
+  // Validar CPF
+  static validarCPF(cpf: string): boolean {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    
+    if (cpfLimpo.length !== 11) return false;
+    
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
+    
+    // Validação do primeiro dígito verificador
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+      soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
+    }
+    let digito1 = 11 - (soma % 11);
+    if (digito1 > 9) digito1 = 0;
+    
+    // Validação do segundo dígito verificador
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+      soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
+    }
+    let digito2 = 11 - (soma % 11);
+    if (digito2 > 9) digito2 = 0;
+    
+    return parseInt(cpfLimpo.charAt(9)) === digito1 && parseInt(cpfLimpo.charAt(10)) === digito2;
   }
 }
 
