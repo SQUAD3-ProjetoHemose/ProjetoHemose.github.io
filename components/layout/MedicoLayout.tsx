@@ -2,136 +2,233 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuthentication } from '@/hooks';
-import { 
-  FileText, 
-  Calendar, 
-  Users, 
-  Stethoscope,
-  Activity,
+import {
   Menu,
   X,
   LogOut,
-  Home
+  Calendar,
+  Users,
+  FileText,
+  UserCheck,
+  UserPlus,
+  Stethoscope
 } from 'lucide-react';
 
-// Interface para itens de navegação
-interface NavItem {
-  href: string;
-  label: string;
-  icon: any;
+interface MedicoLayoutProps {
+  children: React.ReactNode;
 }
 
-// Layout principal para páginas médicas
-export default function MedicoLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
+const navigationItems = [
+  {
+    name: 'Dashboard',
+    href: '/medico',
+    icon: FileText,
+    description: 'Visão geral do médico'
+  },
+  {
+    name: 'Pacientes',
+    href: '/medico/pacientes',
+    icon: Users,
+    description: 'Lista de Pacientes'
+  },
+  {
+    name: 'Consultas',
+    href: '/medico/consultas',
+    icon: Calendar,
+    description: 'Gerenciar Consultas'
+  },
+  {
+    name: 'Check-in',
+    href: '/medico/check-in',
+    icon: UserCheck,
+    description: 'Check-in de Pacientes'
+  },
+  {
+    name: 'Acompanhantes',
+    href: '/medico/acompanhantes',
+    icon: UserPlus,
+    description: 'Acompanhantes dos Pacientes'
+  },
+  {
+    name: 'Relatórios',
+    href: '/medico/relatorios',
+    icon: FileText,
+    description: 'Relatórios Médicos'
+  }
+];
+
+export default function MedicoLayout({ children }: MedicoLayoutProps) {
   const { user, logout } = useAuthentication();
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Itens de navegação do médico
-  const navItems: NavItem[] = [
-    { href: '/medico', label: 'Dashboard', icon: Home },
-    { href: '/medico/prontuarios', label: 'Prontuários', icon: FileText },
-    { href: '/medico/agenda', label: 'Agenda', icon: Calendar },
-    { href: '/medico/pacientes', label: 'Pacientes', icon: Users },
-    { href: '/medico/prescricoes', label: 'Prescrições', icon: Stethoscope },
-    { href: '/medico/evolucoes', label: 'Evoluções', icon: Activity },
-  ];
-
-  // Função para logout
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
-
-  // Verificar se um item está ativo
-  const isActiveItem = (href: string) => {
+  const isActive = (href: string) => {
     if (href === '/medico') {
       return pathname === '/medico';
     }
     return pathname.startsWith(href);
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-16 px-4 bg-blue-700">
-          <h1 className="text-xl font-bold text-white">HEMOSE Médico</h1>
-          <button 
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-white"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
-        <nav className="mt-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 ${
-                  isActiveItem(item.href) ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700' : ''
-                }`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Icon className="h-5 w-5 mr-3" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Informações do usuário */}
-        <div className="absolute bottom-0 w-full p-4 border-t">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Dr(a). {user?.nome}</p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar para desktop */}
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+        <div className="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200">
+          {/* Logo/Header */}
+          <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                <Stethoscope className="text-white h-5 w-5" />
+              </div>
+              <div className="ml-3">
+                <h1 className="text-lg font-semibold text-gray-900">HEMOSE</h1>
+                <p className="text-xs text-gray-500">Médico</p>
+              </div>
             </div>
-            <button 
-              onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600"
-              title="Sair"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
+            <nav className="mt-5 flex-1 space-y-1 px-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`${
+                      isActive(item.href)
+                        ? 'bg-blue-50 border-blue-600 text-blue-800'
+                        : 'border-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md border-l-4 transition-colors`}
+                  >
+                    <Icon
+                      className={`${
+                        isActive(item.href) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                      } mr-3 h-5 w-5`}
+                    />
+                    <div>
+                      <div>{item.name}</div>
+                      <div className="text-xs text-gray-500">{item.description}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* User info */}
+          <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-gray-600 font-medium text-sm">
+                  {user?.nome?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-800">{user?.nome}</p>
+                <p className="text-xs text-gray-600">Médico</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="ml-12 text-blue-600 hover:text-blue-800 transition-colors"
+                title="Sair"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Overlay para mobile */}
+      {/* Sidebar mobile */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 flex lg:hidden">
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-50" onClick={() => setSidebarOpen(false)} />
+          <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
+            <div className="absolute top-0 right-0 -mr-12 pt-2">
+              <button
+                className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-6 w-6 text-gray-700" />
+              </button>
+            </div>
+            <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                  <Stethoscope className="text-white h-5 w-5" />
+                </div>
+                <div className="ml-3">
+                  <h1 className="text-lg font-semibold text-gray-900">HEMOSE</h1>
+                  <p className="text-xs text-gray-500">Médico</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 h-0 flex-1 overflow-y-auto">
+              <nav className="space-y-1 px-2">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`${
+                        isActive(item.href)
+                          ? 'bg-blue-50 border-blue-500 text-blue-700'
+                          : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      } group flex items-center px-2 py-2 text-base font-medium rounded-md border-l-4`}
+                    >
+                      <Icon className="mr-4 h-6 w-6" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Conteúdo principal */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="flex items-center justify-between h-16 px-4 bg-white shadow-sm lg:px-6">
-          <button 
+      {/* Main content */}
+      <div className="lg:pl-64 flex flex-col flex-1">
+        {/* Top bar mobile */}
+        <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow lg:hidden">
+          <button
+            className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 lg:hidden"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-600"
           >
             <Menu className="h-6 w-6" />
           </button>
-          
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-700">Dr(a). {user?.nome}</span>
+          <div className="flex flex-1 justify-between px-4">
+            <div className="flex flex-1 items-center">
+              <h1 className="text-lg font-semibold text-gray-900">HEMOSE Médico</h1>
+            </div>
+            <div className="ml-4 flex items-center md:ml-6">
+              <button
+                onClick={handleLogout}
+                className="rounded-full bg-white p-1 text-gray-400 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <LogOut className="h-6 w-6" />
+              </button>
+            </div>
           </div>
-        </header>
+        </div>
 
-        {/* Conteúdo da página */}
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
-          {children}
+        {/* Page content */}
+        <main className="flex-1">
+          <div className="py-6">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </div>

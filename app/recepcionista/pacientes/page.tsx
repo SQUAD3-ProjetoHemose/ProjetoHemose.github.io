@@ -428,7 +428,7 @@ function PacienteDashboardPage() {
                 </button>
                 <button
                   onClick={handleSalvarPaciente}
-                  className="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300"
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
                 >
                   Salvar Alterações
                 </button>
@@ -436,7 +436,7 @@ function PacienteDashboardPage() {
             ) : (
               <button
                 onClick={handleSalvarPaciente}
-                className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300"
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
               >
                 Cadastrar Paciente
               </button>
@@ -488,7 +488,12 @@ function PacienteDashboardPage() {
 }
 
 // HOC para proteger a rota, permitindo apenas admin, enfermeira e médico
-export default withProtectedRoute([UserRole.ADMIN,UserRole.ENFERMEIRA,UserRole.MEDICO])(PacienteDashboardPage);
+export default withProtectedRoute([
+  UserRole.ADMIN,
+  UserRole.ENFERMEIRA,
+  UserRole.MEDICO,
+  UserRole.RECEPCIONISTA // <-- Adicione esta linha!
+])(PacienteDashboardPage);
 /* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \

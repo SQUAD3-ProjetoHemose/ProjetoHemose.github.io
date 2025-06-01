@@ -93,8 +93,8 @@ function MedicoDashboardPage() {
   if (isLoading || loadingPacientes) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
-        <p className="ml-2 text-blue-700">Carregando dados médicos...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-700"></div>
+        <p className="ml-2 text-blue-800">Carregando dados médicos...</p>
       </div>
     );
   }
@@ -110,7 +110,7 @@ function MedicoDashboardPage() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black">Total de Consultas</h2>
+          <h2 className="text-lg font-semibold text-black ">Total de Consultas</h2>
           <p className="text-3xl font-bold text-black">{stats.totalConsultas}</p>
         </div>
         
@@ -164,16 +164,16 @@ function MedicoDashboardPage() {
           <h2 className="text-lg font-semibold text-black mb-4">Ações Rápidas</h2>
           
           <div className="space-y-3">
-            <a href="/medico/prontuarios/novo" className="block w-full text-center bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/medico/prontuarios/novo" className="block w-full text-center bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">
               Novo Prontuário
             </a>
-            <a href="/medico/prescricoes/nova" className="block w-full text-center bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/medico/prescricoes/nova" className="block w-full text-center bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">
               Nova Prescrição
             </a>
-            <a href="/medico/pacientes" className="block w-full text-center bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/medico/pacientes" className="block w-full text-center bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">
               Buscar Paciente
             </a>
-            <a href="/medico/internacoes" className="block w-full text-center bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
+            <a href="/medico/internacoes" className="block w-full text-center bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">
               Gerenciar Internações
             </a>
           </div>

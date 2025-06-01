@@ -129,8 +129,8 @@ function EnfermeiraDashboardPage() {
           )}
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-black mb-4">Ações Rápidas</h2>
+        <div className="bg-white p-6 rounded-lg shadow-md mb-20">
+          <h2 className="text-lg font-semibold text-black mb-8">Ações Rápidas</h2>
           
           <div className="space-y-3">
             <a href="/enfermeira/triagem" className="block w-full text-center bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">

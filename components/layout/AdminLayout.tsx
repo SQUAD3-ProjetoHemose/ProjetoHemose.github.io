@@ -81,7 +81,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Logo/Header */}
           <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-red-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">H</span>
               </div>
               <div className="ml-3">
@@ -102,13 +102,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     href={item.href}
                     className={`${
                       isActive(item.href)
-                        ? 'bg-red-50 border-red-500 text-red-700'
-                        : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-red-50 border-red-600 text-red-800'
+                        : 'border-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                     } group flex items-center px-2 py-2 text-sm font-medium rounded-md border-l-4 transition-colors`}
                   >
                     <Icon
                       className={`${
-                        isActive(item.href) ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-500'
+                        isActive(item.href) ? 'text-red-600' : 'text-gray-400 group-hover:text-gray-600'
                       } mr-3 h-5 w-5`}
                     />
                     <div>
@@ -130,12 +130,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </span>
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700">{user?.nome}</p>
-                <p className="text-xs text-gray-500">Administrador</p>
+                <p className="text-sm font-medium text-gray-800">{user?.nome}</p>
+                <p className="text-xs text-gray-600">Administrador</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-3 text-gray-400 hover:text-red-500 transition-colors"
+                className="ml-12 text-red-600 hover:text-red-800 transition-colors"
                 title="Sair"
               >
                 <LogOut className="h-5 w-5" />
@@ -148,7 +148,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar mobile */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 flex lg:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-50" onClick={() => setSidebarOpen(false)} />
           <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
