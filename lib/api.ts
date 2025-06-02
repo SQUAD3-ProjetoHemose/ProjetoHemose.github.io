@@ -244,11 +244,11 @@ export const pacientesAPI = {
     apiClient.delete(`/paciente/${id}`),
     
   search: (term: string) =>
-    apiClient.get<any[]>(`/pacientes/search?q=${encodeURIComponent(term)}`),
+    apiClient.get<any[]>(`/paciente/search?q=${encodeURIComponent(term)}`),
   
-  // Buscar paciente por CPF
+  // Buscar paciente por CPF - corrigir endpoint
   getByCpf: async (cpf: string) => {
-    return apiClient.get(`/pacientes/buscar-cpf/${cpf}`);
+    return apiClient.get(`/paciente/buscar-cpf/${cpf}`);
   },
 };
 
@@ -258,20 +258,30 @@ export const agendamentosAPI = {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) queryParams.append(key, value.toString());
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
       });
     }
-    return apiClient.get<any[]>(`/agendamentos?${queryParams.toString()}`);
+    const endpoint = `/agendamentos?${queryParams.toString()}`;
+    console.log('📅 Buscando agendamentos:', endpoint);
+    return apiClient.get<any[]>(endpoint);
   },
   
-  getToday: () =>
-    apiClient.get<any[]>('/agendamentos/today'),
+  getToday: () => {
+    console.log('📅 Buscando agendamentos de hoje');
+    return apiClient.get<any[]>('/agendamentos/today');
+  },
     
-  getByDate: (date: string) =>
-    apiClient.get<any[]>(`/agendamentos/by-date/${date}`),
+  getByDate: (date: string) => {
+    console.log('📅 Buscando agendamentos por data:', date);
+    return apiClient.get<any[]>(`/agendamentos/by-date/${date}`);
+  },
     
-  getById: (id: number) =>
-    apiClient.get<any>(`/agendamentos/${id}`),
+  getById: (id: number) => {
+    console.log('📅 Buscando agendamento por ID:', id);
+    return apiClient.get<any>(`/agendamentos/${id}`);
+  },
     
   create: (agendamentoData: any) =>
     apiClient.post<any>('/agendamentos', agendamentoData),
