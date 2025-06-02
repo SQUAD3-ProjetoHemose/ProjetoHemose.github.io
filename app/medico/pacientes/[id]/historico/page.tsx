@@ -17,7 +17,7 @@ import {
   Clock,
   Stethoscope,
   FlaskConical,
-  Pills
+  Pill
 } from 'lucide-react';
 
 // Interface para histórico de consultas
