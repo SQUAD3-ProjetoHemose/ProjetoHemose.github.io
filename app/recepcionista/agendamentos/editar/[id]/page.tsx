@@ -1,33 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
 import useAgendamentoStore from '@/store/agendamentoStore';
 import usePacienteStore from '@/store/pacienteStore';
 import useUserStore from '@/store/userStore';
 import { AgendamentoForm, StatusAgendamento, TipoAgendamento, UserRole } from '@/types';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-// Atualização da tipagem conforme documentação do Next.js
-type EditarAgendamentoPageProps = {
-  params: Promise<{ id: string }>;
-};
-
-async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
-  const params = await props.params;
-  const agendamentoId = parseInt(params.id);
+function EditarAgendamentoPage() {
+  const params = useParams();
+  const agendamentoId = parseInt(params.id as string);
   const router = useRouter();
-  const { 
-    fetchAgendamento, 
-    updateAgendamento,
-    deleteAgendamento 
-  } = useAgendamentoStore();
+  const { fetchAgendamento, updateAgendamento, deleteAgendamento } = useAgendamentoStore();
   const { pacientes, fetchPacientes } = usePacienteStore();
   const { users, fetchUsers } = useUserStore();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Estado para o formulário
   const [formData, setFormData] = useState<AgendamentoForm>({
     data: '',
@@ -36,35 +27,35 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
     paciente_id: 0,
     medico_id: 0,
     observacoes: '',
-    status: StatusAgendamento.AGENDADO
+    status: StatusAgendamento.AGENDADO,
   });
-  
+
   // Carregar dados do agendamento, pacientes e médicos
   useEffect(() => {
     const carregarDados = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Carregar os dados necessários
         await fetchPacientes();
         await fetchUsers('medico');
-        
+
         // Carregar o agendamento específico
         const dadosAgendamento = await fetchAgendamento(agendamentoId);
-        
+
         if (dadosAgendamento) {
           // Formatar a data para o formato adequado para input type="date"
           const dataFormatada = dadosAgendamento.data.substring(0, 10); // yyyy-MM-dd
-          
+
           setFormData({
             data: dataFormatada,
-            horario: dadosAgendamento.horario,
+            horario: dadosAgendamento.hora,
             tipo: dadosAgendamento.tipo,
             paciente_id: dadosAgendamento.paciente_id,
             medico_id: dadosAgendamento.medico_id,
             observacoes: dadosAgendamento.observacoes || '',
-            status: dadosAgendamento.status
+            status: dadosAgendamento.status,
           });
         }
       } catch (err) {
@@ -74,55 +65,54 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
         setIsLoading(false);
       }
     };
-    
+
     carregarDados();
   }, [agendamentoId, fetchAgendamento, fetchPacientes, fetchUsers]);
-  
+
   // Manipulador de mudança de campos
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
+
     // Converter valores para número quando necessário
     if (name === 'paciente_id' || name === 'medico_id') {
       setFormData({
         ...formData,
-        [name]: parseInt(value)
+        [name]: parseInt(value),
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value
+        [name]: value,
       });
     }
   };
-  
+
   // Manipulador de envio do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validar os campos obrigatórios
     if (formData.paciente_id === 0 || formData.medico_id === 0) {
       setError('Por favor, selecione um paciente e um médico.');
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Enviar formulário para a API
       await updateAgendamento(agendamentoId, formData);
-      
+
       // Exibir mensagem de sucesso
       setSuccess('Agendamento atualizado com sucesso!');
-      
+
       // Aguardar 2 segundos e redirecionar
       setTimeout(() => {
         router.push('/recepcionista/agendamentos');
       }, 2000);
-      
     } catch (err: any) {
       console.error('Erro ao atualizar agendamento:', err);
       setError(err.message || 'Ocorreu um erro ao atualizar o agendamento.');
@@ -130,19 +120,23 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
       setIsLoading(false);
     }
   };
-  
+
   // Função para excluir o agendamento
   const handleDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.')) {
+    if (
+      window.confirm(
+        'Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.'
+      )
+    ) {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         await deleteAgendamento(agendamentoId);
-        
+
         // Exibir mensagem de sucesso
         setSuccess('Agendamento excluído com sucesso!');
-        
+
         // Aguardar 2 segundos e redirecionar
         setTimeout(() => {
           router.push('/recepcionista/agendamentos');
@@ -155,7 +149,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
       }
     }
   };
-  
+
   // Função para voltar à página de listagem
   const handleVoltar = () => {
     router.push('/recepcionista/agendamentos');
@@ -170,7 +164,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
       </div>
     );
   }
-  
+
   // Obter o nome do status para exibição
   const getStatusName = (status: StatusAgendamento) => {
     switch (status) {
@@ -188,7 +182,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
         return status;
     }
   };
-  
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -200,19 +194,19 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
           Voltar
         </button>
       </div>
-      
+
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
           <p>{error}</p>
         </div>
       )}
-      
+
       {success && (
         <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
           <p>{success}</p>
         </div>
       )}
-      
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -231,7 +225,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
                 required
               />
             </div>
-            
+
             {/* Campo de horário */}
             <div>
               <label htmlFor="horario" className="block text-sm font-medium text-black mb-2">
@@ -247,7 +241,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
                 required
               />
             </div>
-            
+
             {/* Campo de tipo */}
             <div>
               <label htmlFor="tipo" className="block text-sm font-medium text-black mb-2">
@@ -267,7 +261,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
                 <option value={TipoAgendamento.PROCEDIMENTO}>Procedimento</option>
               </select>
             </div>
-            
+
             {/* Campo de paciente */}
             <div>
               <label htmlFor="paciente_id" className="block text-sm font-medium text-black mb-2">
@@ -289,7 +283,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
                 ))}
               </select>
             </div>
-            
+
             {/* Campo de médico */}
             <div>
               <label htmlFor="medico_id" className="block text-sm font-medium text-black mb-2">
@@ -313,7 +307,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
                   ))}
               </select>
             </div>
-            
+
             {/* Campo de status */}
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-black mb-2">
@@ -334,7 +328,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
               </select>
             </div>
           </div>
-          
+
           {/* Campo de observações */}
           <div className="mt-6">
             <label htmlFor="observacoes" className="block text-sm font-medium text-black mb-2">
@@ -350,7 +344,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
               placeholder="Informações adicionais sobre o agendamento..."
             />
           </div>
-          
+
           {/* Botões do formulário */}
           <div className="mt-8 flex justify-between space-x-4">
             <button
@@ -361,7 +355,7 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
             >
               Excluir Agendamento
             </button>
-            
+
             <div className="flex space-x-4">
               <button
                 type="button"
@@ -386,8 +380,8 @@ async function EditarAgendamentoPage(props: EditarAgendamentoPageProps) {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(EditarAgendamentoPage);
-            
+export default withProtectedRoute([UserRole.ADMIN, UserRole.RECEPCIONISTA])(EditarAgendamentoPage);
+
 /*             
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \

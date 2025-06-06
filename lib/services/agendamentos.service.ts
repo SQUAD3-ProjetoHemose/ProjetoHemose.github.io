@@ -1,22 +1,22 @@
-import { agendamentosAPI } from '../api';
-import { 
-  Agendamento, 
-  CreateAgendamentoDto, 
-  UpdateAgendamentoDto, 
+import {
+  Agendamento,
+  CreateAgendamentoDto,
+  PaginationParams,
   StatusAgendamento,
-  TipoAgendamento,
-  PaginatedResponse, 
-  PaginationParams 
+  UpdateAgendamentoDto,
 } from '../../types';
+import { agendamentosAPI } from '../api';
 
 export class AgendamentosService {
   // Listar agendamentos com filtros
-  static async getAgendamentos(params?: {
-    data?: string;
-    medico_id?: number;
-    paciente_id?: number;
-    status?: StatusAgendamento;
-  } & PaginationParams): Promise<Agendamento[]> {
+  static async getAgendamentos(
+    params?: {
+      data?: string;
+      medico_id?: number;
+      paciente_id?: number;
+      status?: StatusAgendamento;
+    } & PaginationParams
+  ): Promise<Agendamento[]> {
     return agendamentosAPI.getAll(params);
   }
 
@@ -41,7 +41,10 @@ export class AgendamentosService {
   }
 
   // Atualizar agendamento
-  static async updateAgendamento(id: number, agendamentoData: UpdateAgendamentoDto): Promise<Agendamento> {
+  static async updateAgendamento(
+    id: number,
+    agendamentoData: UpdateAgendamentoDto
+  ): Promise<Agendamento> {
     return agendamentosAPI.update(id, agendamentoData);
   }
 
@@ -71,10 +74,16 @@ export class AgendamentosService {
   }
 
   // Verificar disponibilidade de horário
-  static async checkAvailability(data: string, horario: string, medico_id: number): Promise<boolean> {
+  static async checkAvailability(
+    data: string,
+    horario: string,
+    medico_id: number
+  ): Promise<boolean> {
     try {
       const agendamentos = await agendamentosAPI.getAll({ data, medico_id });
-      return !agendamentos.some(ag => ag.horario === horario && ag.status !== StatusAgendamento.CANCELADO);
+      return !agendamentos.some(
+        (ag) => ag.horario === horario && ag.status !== StatusAgendamento.CANCELADO
+      );
     } catch (error) {
       console.error('Erro ao verificar disponibilidade:', error);
       return false;
@@ -86,16 +95,16 @@ export class AgendamentosService {
     try {
       const agendamentos = await agendamentosAPI.getAll({ data, medico_id });
       const horariosOcupados = agendamentos
-        .filter(ag => ag.status !== StatusAgendamento.CANCELADO)
-        .map(ag => ag.horario);
-      
+        .filter((ag) => ag.status !== StatusAgendamento.CANCELADO)
+        .map((ag) => ag.hora || ag.horario); // Suportar ambos os campos
+
       // Gerar horários disponíveis (8h às 17h, de hora em hora)
       const todosHorarios = [];
       for (let hora = 8; hora <= 17; hora++) {
         todosHorarios.push(`${hora.toString().padStart(2, '0')}:00`);
       }
-      
-      return todosHorarios.filter(horario => !horariosOcupados.includes(horario));
+
+      return todosHorarios.filter((horario) => !horariosOcupados.includes(horario));
     } catch (error) {
       console.error('Erro ao obter horários disponíveis:', error);
       return [];
@@ -103,12 +112,19 @@ export class AgendamentosService {
   }
 
   // Obter agenda do médico
-  static async getAgendaMedico(medico_id: number, startDate: string, endDate: string): Promise<Agendamento[]> {
+  static async getAgendaMedico(
+    medico_id: number,
+    startDate: string,
+    endDate: string
+  ): Promise<Agendamento[]> {
     return agendamentosAPI.getAll({ medico_id });
   }
 
   // Estatísticas de agendamentos
-  static async getAgendamentosStats(startDate?: string, endDate?: string): Promise<{
+  static async getAgendamentosStats(
+    startDate?: string,
+    endDate?: string
+  ): Promise<{
     total: number;
     realizados: number;
     cancelados: number;
@@ -117,18 +133,18 @@ export class AgendamentosService {
   }> {
     try {
       const agendamentos = await agendamentosAPI.getAll();
-      
+
       const stats = {
         total: agendamentos.length,
-        realizados: agendamentos.filter(ag => ag.status === StatusAgendamento.REALIZADO).length,
-        cancelados: agendamentos.filter(ag => ag.status === StatusAgendamento.CANCELADO).length,
-        porStatus: Object.values(StatusAgendamento).map(status => ({
+        realizados: agendamentos.filter((ag) => ag.status === StatusAgendamento.REALIZADO).length,
+        cancelados: agendamentos.filter((ag) => ag.status === StatusAgendamento.CANCELADO).length,
+        porStatus: Object.values(StatusAgendamento).map((status) => ({
           status,
-          count: agendamentos.filter(ag => ag.status === status).length
+          count: agendamentos.filter((ag) => ag.status === status).length,
         })),
-        porMedico: [] // Implementar se necessário
+        porMedico: [], // Implementar se necessário
       };
-      
+
       return stats;
     } catch (error) {
       console.error('Erro ao obter estatísticas:', error);
@@ -137,10 +153,14 @@ export class AgendamentosService {
   }
 
   // Reagendar consulta
-  static async reagendarConsulta(id: number, novaData: string, novoHorario: string): Promise<Agendamento> {
+  static async reagendarConsulta(
+    id: number,
+    novaData: string,
+    novoHorario: string
+  ): Promise<Agendamento> {
     return agendamentosAPI.update(id, {
       data: novaData,
-      horario: novoHorario
+      horario: novoHorario,
     });
   }
 }

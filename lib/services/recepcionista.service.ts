@@ -1,6 +1,6 @@
-import { apiClient, agendamentosAPI, pacientesAPI } from '../api';
 import { Stats } from '@/types';
 import { format } from 'date-fns';
+import { agendamentosAPI, pacientesAPI } from '../api';
 
 export class RecepcionistaService {
   // Obter estatísticas do dashboard
@@ -14,28 +14,26 @@ export class RecepcionistaService {
       ]);
 
       const hoje = format(new Date(), 'yyyy-MM-dd');
-      
+
       // Calcular estatísticas baseadas nos dados reais - corrigir comparação
-      const agendamentosHojeFiltrados = agendamentosHoje.filter(ag => 
-        ag.data === hoje
-      );
-      const pacientesAguardando = agendamentosHojeFiltrados.filter(ag => 
-        ag.status === 'agendado' || ag.status === 'confirmado'
+      const agendamentosHojeFiltrados = agendamentosHoje.filter((ag) => ag.data === hoje);
+      const pacientesAguardando = agendamentosHojeFiltrados.filter(
+        (ag) => ag.status === 'agendado' || ag.status === 'confirmado'
       ).length;
 
       // Agrupar próximos agendamentos (próximos 7 dias)
       const proximosDias = new Date();
       proximosDias.setDate(proximosDias.getDate() + 7);
-      const proximosAgendamentos = agendamentosTodos.filter(ag => {
+      const proximosAgendamentos = agendamentosTodos.filter((ag) => {
         const dataAgendamento = new Date(ag.data);
         return dataAgendamento > new Date() && dataAgendamento <= proximosDias;
       }).length;
 
       return {
         pacientesInternados: Math.floor(Math.random() * 15) + 5, // Simular até implementar
-        pacientesTriagem: Math.floor(Math.random() * 8) + 2,     // Simular até implementar
+        pacientesTriagem: Math.floor(Math.random() * 8) + 2, // Simular até implementar
         medicamentosAdministrar: Math.floor(Math.random() * 20) + 10, // Simular até implementar
-        leitosDisponiveis: Math.floor(Math.random() * 12) + 3,   // Simular até implementar
+        leitosDisponiveis: Math.floor(Math.random() * 12) + 3, // Simular até implementar
         pacientesHoje: agendamentosHojeFiltrados.length,
         agendamentosHoje: agendamentosHojeFiltrados.length,
         pacientesAguardando,
@@ -52,17 +50,17 @@ export class RecepcionistaService {
     try {
       const agendamentosHoje = await agendamentosAPI.getToday();
       const hoje = format(new Date(), 'yyyy-MM-dd');
-      
+
       return agendamentosHoje
-        .filter(ag => {
+        .filter((ag) => {
           // Comparar diretamente as strings de data
           return ag.data === hoje && (ag.status === 'agendado' || ag.status === 'confirmado');
         })
-        .sort((a, b) => a.horario.localeCompare(b.horario))
-        .map(ag => ({
+        .sort((a, b) => (a.hora || a.horario).localeCompare(b.hora || b.horario)) // Suportar ambos os campos
+        .map((ag) => ({
           id: ag.id,
           nome: ag.paciente?.nome || 'Nome não disponível',
-          horario: ag.horario,
+          horario: ag.hora || ag.horario, // Usar 'hora' preferencialmente
           tipo: ag.tipo,
           medico: ag.medico?.nome || 'Médico não definido',
           status: ag.status === 'confirmado' ? 'Confirmado' : 'Aguardando',
@@ -84,20 +82,22 @@ export class RecepcionistaService {
       proximosDias.setDate(proximosDias.getDate() + 7);
 
       return agendamentos
-        .filter(ag => {
+        .filter((ag) => {
           const dataAgendamento = new Date(ag.data);
           return dataAgendamento > hoje && dataAgendamento <= proximosDias;
         })
         .sort((a, b) => {
-          const dateA = new Date(`${a.data} ${a.horario}`);
-          const dateB = new Date(`${b.data} ${b.horario}`);
+          const horaA = a.hora || a.horario;
+          const horaB = b.hora || b.horario;
+          const dateA = new Date(`${a.data} ${horaA}`);
+          const dateB = new Date(`${b.data} ${horaB}`);
           return dateA.getTime() - dateB.getTime();
         })
         .slice(0, 10) // Limitar a 10 próximos agendamentos
-        .map(ag => ({
+        .map((ag) => ({
           id: ag.id,
           data: format(new Date(ag.data), 'dd/MM/yyyy'),
-          horario: ag.horario,
+          horario: ag.hora || ag.horario, // Usar 'hora' preferencialmente
           paciente: ag.paciente?.nome || 'Nome não disponível',
           tipo: ag.tipo,
           medico: ag.medico?.nome || 'Médico não definido',

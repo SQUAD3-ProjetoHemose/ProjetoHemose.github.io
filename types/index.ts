@@ -110,7 +110,7 @@ export interface UpdatePacienteDto extends Partial<CreatePacienteDto> {}
 export interface Agendamento {
   id: number;
   data: string;
-  horario: string;
+  hora: string;
   status: StatusAgendamento;
   tipo: TipoAgendamento;
   observacoes?: string;

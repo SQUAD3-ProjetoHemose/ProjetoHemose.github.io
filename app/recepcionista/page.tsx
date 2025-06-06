@@ -20,7 +20,7 @@ function RecepcionistaDashboardPage() {
   const router = useRouter();
   // Obter o usuário do contexto de autenticação
   const { user } = useAuthentication();
-  
+
   // Estados para armazenar dados dinâmicos da recepção
   const [stats, setStats] = useState<Stats>({
     pacientesInternados: 0,
@@ -45,7 +45,7 @@ function RecepcionistaDashboardPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Carregar dados em paralelo usando o serviço
         const [statsData, filaData, proximosData] = await Promise.all([
           RecepcionistaService.getDashboardStats(),
@@ -70,25 +70,30 @@ function RecepcionistaDashboardPage() {
   // Função para obter cor da prioridade
   const getPrioridadeColor = (prioridade?: string) => {
     switch (prioridade) {
-      case 'Urgente': return 'bg-red-100 text-red-800';
-      case 'Alta': return 'bg-orange-100 text-orange-800';
-      case 'Normal': return 'bg-blue-100 text-blue-800';
-      case 'Baixa': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Urgente':
+        return 'bg-red-100 text-red-800';
+      case 'Alta':
+        return 'bg-orange-100 text-orange-800';
+      case 'Normal':
+        return 'bg-blue-100 text-blue-800';
+      case 'Baixa':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   // Função para validar e transformar dados da fila
   const transformarFilaData = (data: any[]): FilaEspera[] => {
-    return data.map(item => ({
+    return data.map((item) => ({
       ...item,
-      status: ['Aguardando', 'Triagem', 'Em Atendimento', 'Finalizado'].includes(item.status) 
-        ? item.status as FilaEspera['status']
-        : 'Aguardando' as FilaEspera['status'],
+      status: ['Aguardando', 'Triagem', 'Em Atendimento', 'Finalizado'].includes(item.status)
+        ? (item.status as FilaEspera['status'])
+        : ('Aguardando' as FilaEspera['status']),
       prioridade: ['Urgente', 'Alta', 'Normal', 'Baixa'].includes(item.prioridade)
         ? item.prioridade
         : 'Normal',
-      chegada: item.chegada || undefined
+      chegada: item.chegada || undefined,
     }));
   };
 
@@ -113,10 +118,10 @@ function RecepcionistaDashboardPage() {
   // Manipulador para busca
   const handleSearch = async () => {
     if (searchTerm.trim() === '') return;
-    
+
     try {
       const pacientes = await RecepcionistaService.buscarPaciente(searchTerm);
-      
+
       if (pacientes.length === 0) {
         alert('Nenhum paciente encontrado com o termo pesquisado.');
         return;
@@ -129,7 +134,7 @@ function RecepcionistaDashboardPage() {
         // Redirecionar para lista com filtro
         router.push(`/recepcionista/pacientes?search=${encodeURIComponent(searchTerm)}`);
       }
-      
+
       setSearchTerm('');
     } catch (error) {
       console.error('Erro na busca:', error);
@@ -153,7 +158,7 @@ function RecepcionistaDashboardPage() {
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
         <h2 className="text-lg font-semibold text-red-800 mb-2">Erro ao carregar dashboard</h2>
         <p className="text-red-600 mb-4">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
         >
@@ -166,11 +171,9 @@ function RecepcionistaDashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-black">Dashboard de Recepção</h1>
-      
+
       {/* Saudação personalizada */}
-      {user && (
-        <p className="text-black text-sm sm:text-base">Olá, {user.nome}. Bem-vindo(a)!</p>
-      )}
+      {user && <p className="text-black text-sm sm:text-base">Olá, {user.nome}. Bem-vindo(a)!</p>}
 
       {/* Cards de estatísticas - responsivo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -202,7 +205,7 @@ function RecepcionistaDashboardPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
             <h2 className="text-lg font-semibold text-black">Fila de Espera</h2>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-              <button 
+              <button
                 className="px-3 py-1 bg-purple-700 text-white rounded text-sm hover:bg-purple-800 w-full sm:w-auto"
                 onClick={handleAtualizarFila}
                 disabled={isLoading}
@@ -268,19 +271,29 @@ function RecepcionistaDashboardPage() {
                         <div className="text-sm text-black">{paciente.medico}</div>
                       </td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          paciente.status === 'Aguardando' ? 'bg-purple-100 text-black' :
-                          paciente.status === 'Triagem' ? 'bg-purple-200 text-black' :
-                          paciente.status === 'Em Atendimento' ? 'bg-purple-300 text-black' :
-                          paciente.status === 'Finalizado' ? 'bg-green-100 text-green-800' :
-                          'bg-purple-100 text-black'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            paciente.status === 'Aguardando'
+                              ? 'bg-purple-100 text-black'
+                              : paciente.status === 'Triagem'
+                              ? 'bg-purple-200 text-black'
+                              : paciente.status === 'Em Atendimento'
+                              ? 'bg-purple-300 text-black'
+                              : paciente.status === 'Finalizado'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-purple-100 text-black'
+                          }`}
+                        >
                           {paciente.status}
                         </span>
                       </td>
                       <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                         {paciente.prioridade && (
-                          <span className={`px-2 py-1 text-xs rounded-full ${getPrioridadeColor(paciente.prioridade)}`}>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${getPrioridadeColor(
+                              paciente.prioridade
+                            )}`}
+                          >
                             {paciente.prioridade}
                           </span>
                         )}
@@ -303,16 +316,28 @@ function RecepcionistaDashboardPage() {
           <h2 className="text-lg font-semibold text-black mb-4">Ações Rápidas</h2>
 
           <div className="space-y-3">
-            <a href="/recepcionista/pacientes/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
+            <a
+              href="/recepcionista/pacientes/novo"
+              className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
+            >
               Novo Paciente
             </a>
-            <a href="/recepcionista/agendamentos/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
+            <a
+              href="/recepcionista/agendamentos/novo"
+              className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
+            >
               Novo Agendamento
             </a>
-            <a href="/recepcionista/check-in" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
+            <a
+              href="/recepcionista/check-in"
+              className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
+            >
               Check-in de Paciente
             </a>
-            <a href="/recepcionista/acompanhantes/novo" className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
+            <a
+              href="/recepcionista/acompanhantes/novo"
+              className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
+            >
               Cadastrar Acompanhante
             </a>
           </div>
@@ -328,7 +353,7 @@ function RecepcionistaDashboardPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               />
-              <button 
+              <button
                 className="bg-purple-700 text-white px-4 py-2 rounded-r-md sm:rounded-l-none rounded-l-md hover:bg-purple-800 mt-2 sm:mt-0 text-sm"
                 onClick={handleSearch}
                 disabled={!searchTerm.trim()}
@@ -394,7 +419,7 @@ function RecepcionistaDashboardPage() {
                       <div className="text-sm text-black">{agendamento.medico}</div>
                     </td>
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
-                      <button 
+                      <button
                         className="text-purple-600 hover:text-purple-800 font-medium"
                         onClick={() => router.push(`/recepcionista/agendamentos/${agendamento.id}`)}
                       >
@@ -409,7 +434,10 @@ function RecepcionistaDashboardPage() {
         </div>
 
         <div className="mt-4 text-right">
-          <a href="/recepcionista/agendamentos" className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium">
+          <a
+            href="/recepcionista/agendamentos"
+            className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium"
+          >
             Ver todos os agendamentos →
           </a>
         </div>

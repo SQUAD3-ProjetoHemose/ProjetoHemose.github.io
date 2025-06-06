@@ -10,7 +10,7 @@ export const useAgendamentoForm = (agendamentoInicial?: Partial<Agendamento>) =>
   // Estado local do formulário
   const [formData, setFormData] = useState<AgendamentoForm>({
     data: agendamentoInicial?.data || format(new Date(), 'yyyy-MM-dd'),
-    horario: agendamentoInicial?.horario || '08:00',
+    horario: agendamentoInicial?.hora || '08:00',
     tipo: agendamentoInicial?.tipo || TipoAgendamento.CONSULTA,
     observacoes: agendamentoInicial?.observacoes || '',
     paciente_id: agendamentoInicial?.paciente_id || 0,

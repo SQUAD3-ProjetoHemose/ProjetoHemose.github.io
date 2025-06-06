@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
 import useAgendamentoStore from '@/store/agendamentoStore';
 import usePacienteStore from '@/store/pacienteStore';
 import useUserStore from '@/store/userStore';
-import { AgendamentoForm, TipoAgendamento, StatusAgendamento, UserRole } from '@/types';
+import { AgendamentoForm, StatusAgendamento, TipoAgendamento, UserRole } from '@/types';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Interface para os dados do formulário de novo paciente
 interface NovoPacienteForm {
@@ -29,10 +29,10 @@ function NovoAgendamentoPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Estado para controlar a exibição do modal de cadastro de paciente
   const [showModal, setShowModal] = useState<boolean>(false);
-  
+
   // Estado para o formulário de novo paciente
   const [novoPaciente, setNovoPaciente] = useState<NovoPacienteForm>({
     nome: '',
@@ -42,26 +42,26 @@ function NovoAgendamentoPage() {
     endereco: '',
     tipo_sanguineo: '',
     alergias: '',
-    historico_medico: ''
+    historico_medico: '',
   });
-  
+
   // Estado para o formulário de agendamento
   const [formData, setFormData] = useState<AgendamentoForm>({
     data: format(new Date(), 'yyyy-MM-dd'),
-    horario: '08:00',
+    horario: '08:00', // Manter 'horario' no formulário para compatibilidade
     tipo: TipoAgendamento.CONSULTA,
     paciente_id: 0,
     medico_id: 0,
     observacoes: '',
-    status: StatusAgendamento.AGENDADO
+    status: StatusAgendamento.AGENDADO,
   });
-  
+
   // Novos estados para pesquisa de paciente
   const [searchCpf, setSearchCpf] = useState<string>('');
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [foundPaciente, setFoundPaciente] = useState<any | null>(null);
-  
+
   // Carregar pacientes e médicos
   useEffect(() => {
     const carregarDados = async () => {
@@ -76,36 +76,36 @@ function NovoAgendamentoPage() {
         setIsLoading(false);
       }
     };
-    
+
     carregarDados();
   }, []);
-  
+
   // Manipulador de mudança de campos do agendamento
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
+
     // Checar se precisamos abrir o modal de novo paciente
     if (name === 'paciente_id' && value === 'novo') {
       setShowModal(true);
       return;
     }
-    
+
     // Converter valores para número quando necessário
     if (name === 'paciente_id' || name === 'medico_id') {
       setFormData({
         ...formData,
-        [name]: parseInt(value)
+        [name]: parseInt(value),
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value
+        [name]: value,
       });
     }
   };
-  
+
   // Manipulador de mudança nos campos do formulário de paciente
   const handlePacienteInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -116,15 +116,15 @@ function NovoAgendamentoPage() {
       [name]: value,
     }));
   };
-  
+
   // Função para formatar CPF: 000.000.000-00
   const formatarCPF = (cpf: string) => {
     // Remove caracteres não numéricos
     cpf = cpf.replace(/\D/g, '');
-    
+
     // Limita a 11 dígitos
     cpf = cpf.slice(0, 11);
-    
+
     // Formata o CPF
     if (cpf.length <= 3) {
       return cpf;
@@ -136,30 +136,30 @@ function NovoAgendamentoPage() {
       return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
     }
   };
-  
+
   // Handler especial para CPF com formatação
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatarCPF(e.target.value);
-    setNovoPaciente(prev => ({
+    setNovoPaciente((prev) => ({
       ...prev,
-      cpf: formattedValue
+      cpf: formattedValue,
     }));
   };
-  
+
   // Função para salvar um novo paciente
   const handleSalvarPaciente = async () => {
     try {
       // Remover formatação do CPF antes de enviar
       const cpfLimpo = novoPaciente.cpf.replace(/\D/g, '');
-      
+
       // Validar campos obrigatórios
       if (!novoPaciente.nome || !novoPaciente.data_nascimento || cpfLimpo.length !== 11) {
         setError('Preencha os campos obrigatórios corretamente. CPF deve conter 11 dígitos.');
         return;
       }
-      
+
       setIsLoading(true);
-      
+
       const pacienteData = {
         nome: novoPaciente.nome,
         cpf: cpfLimpo,
@@ -168,18 +168,18 @@ function NovoAgendamentoPage() {
         endereco: novoPaciente.endereco,
         tipo_sanguineo: novoPaciente.tipo_sanguineo,
         alergias: novoPaciente.alergias,
-        historico_medico: novoPaciente.historico_medico
+        historico_medico: novoPaciente.historico_medico,
       };
-      
+
       // Criar o novo paciente
       const novoPacienteCriado = await createPaciente(pacienteData);
-      
+
       // Atualizar a lista de pacientes
       await fetchPacientes();
-      
+
       // Fechar o modal
       setShowModal(false);
-      
+
       // Limpar o formulário de paciente
       setNovoPaciente({
         nome: '',
@@ -189,19 +189,18 @@ function NovoAgendamentoPage() {
         endereco: '',
         tipo_sanguineo: '',
         alergias: '',
-        historico_medico: ''
+        historico_medico: '',
       });
-      
+
       // Selecionar o novo paciente no formulário de agendamento
       setFormData({
         ...formData,
-        paciente_id: novoPacienteCriado.id
+        paciente_id: novoPacienteCriado.id,
       });
-      
+
       // Mostrar mensagem de sucesso temporária
       setSuccess('Paciente cadastrado com sucesso!');
       setTimeout(() => setSuccess(null), 3000);
-      
     } catch (err: any) {
       console.error('Erro ao cadastrar paciente:', err);
       setError(err.message || 'Ocorreu um erro ao cadastrar o paciente.');
@@ -209,15 +208,15 @@ function NovoAgendamentoPage() {
       setIsLoading(false);
     }
   };
-  
+
   // Função para formatar CPF na pesquisa
   const formatarCPFPesquisa = (cpf: string) => {
     // Remove caracteres não numéricos
     cpf = cpf.replace(/\D/g, '');
-    
+
     // Limita a 11 dígitos
     cpf = cpf.slice(0, 11);
-    
+
     // Formata o CPF
     if (cpf.length <= 3) {
       return cpf;
@@ -238,7 +237,7 @@ function NovoAgendamentoPage() {
     }
 
     const cpfLimpo = searchCpf.replace(/\D/g, '');
-    
+
     if (cpfLimpo.length !== 11) {
       setSearchError('CPF deve ter 11 dígitos');
       return;
@@ -250,13 +249,13 @@ function NovoAgendamentoPage() {
       setFoundPaciente(null);
 
       // Buscar paciente na lista existente primeiro
-      const pacienteExistente = pacientes.find(p => p.cpf.replace(/\D/g, '') === cpfLimpo);
-      
+      const pacienteExistente = pacientes.find((p) => p.cpf.replace(/\D/g, '') === cpfLimpo);
+
       if (pacienteExistente) {
         setFoundPaciente(pacienteExistente);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          paciente_id: pacienteExistente.id
+          paciente_id: pacienteExistente.id,
         }));
         setSearchError(null);
       } else {
@@ -264,16 +263,16 @@ function NovoAgendamentoPage() {
         try {
           const response = await fetch(`/api/pacientes/buscar-cpf/${cpfLimpo}`, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
           });
 
           if (response.ok) {
             const pacienteEncontrado = await response.json();
             setFoundPaciente(pacienteEncontrado);
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
-              paciente_id: pacienteEncontrado.id
+              paciente_id: pacienteEncontrado.id,
             }));
             // Atualizar lista local de pacientes
             await fetchPacientes();
@@ -301,9 +300,9 @@ function NovoAgendamentoPage() {
     setSearchCpf('');
     setFoundPaciente(null);
     setSearchError(null);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      paciente_id: 0
+      paciente_id: 0,
     }));
   };
 
@@ -312,13 +311,13 @@ function NovoAgendamentoPage() {
     const formattedValue = formatarCPFPesquisa(e.target.value);
     setSearchCpf(formattedValue);
     setSearchError(null);
-    
+
     // Limpar paciente encontrado se o usuário começar a digitar novamente
     if (foundPaciente) {
       setFoundPaciente(null);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        paciente_id: 0
+        paciente_id: 0,
       }));
     }
   };
@@ -334,28 +333,27 @@ function NovoAgendamentoPage() {
   // Manipulador de envio do formulário de agendamento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validar os campos obrigatórios
     if (formData.paciente_id === 0 || formData.medico_id === 0) {
       setError('Por favor, selecione um paciente e um médico.');
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Enviar formulário para a API
       await createAgendamento(formData);
-      
+
       // Exibir mensagem de sucesso
       setSuccess('Agendamento criado com sucesso!');
-      
+
       // Aguardar 2 segundos e redirecionar
       setTimeout(() => {
         router.push('/recepcionista/agendamentos');
       }, 2000);
-      
     } catch (err: any) {
       console.error('Erro ao criar agendamento:', err);
       setError(err.message || 'Ocorreu um erro ao criar o agendamento.');
@@ -363,7 +361,7 @@ function NovoAgendamentoPage() {
       setIsLoading(false);
     }
   };
-  
+
   // Função para voltar à página de listagem
   const handleVoltar = () => {
     router.push('/recepcionista/agendamentos');
@@ -378,7 +376,7 @@ function NovoAgendamentoPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -390,19 +388,19 @@ function NovoAgendamentoPage() {
           Voltar
         </button>
       </div>
-      
+
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
           <p>{error}</p>
         </div>
       )}
-      
+
       {success && (
         <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
           <p>{success}</p>
         </div>
       )}
-      
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -422,7 +420,7 @@ function NovoAgendamentoPage() {
                 required
               />
             </div>
-            
+
             {/* Campo de horário */}
             <div>
               <label htmlFor="horario" className="block text-sm font-medium text-black mb-2">
@@ -439,7 +437,7 @@ function NovoAgendamentoPage() {
                 required
               />
             </div>
-            
+
             {/* Campo de tipo */}
             <div>
               <label htmlFor="tipo" className="block text-sm font-medium text-black mb-2">
@@ -516,20 +514,32 @@ function NovoAgendamentoPage() {
                       <p className="font-medium text-green-800">Paciente encontrado:</p>
                       <p className="text-green-700">{foundPaciente.nome}</p>
                       <p className="text-sm text-green-600">
-                        CPF: {formatarCPFPesquisa(foundPaciente.cpf)} | 
-                        Data Nasc.: {foundPaciente.data_nascimento ? new Date(foundPaciente.data_nascimento).toLocaleDateString('pt-BR') : 'N/A'}
+                        CPF: {formatarCPFPesquisa(foundPaciente.cpf)} | Data Nasc.:{' '}
+                        {foundPaciente.data_nascimento
+                          ? new Date(foundPaciente.data_nascimento).toLocaleDateString('pt-BR')
+                          : 'N/A'}
                       </p>
                     </div>
                     <div className="text-green-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-            
+
             {/* Campo de paciente (dropdown) */}
             <div>
               <label htmlFor="paciente_id" className="block text-sm font-medium text-black mb-2">
@@ -554,9 +564,11 @@ function NovoAgendamentoPage() {
                 ) : (
                   <option disabled>Nenhum paciente cadastrado</option>
                 )}
-                <option value="novo" className="font-medium text-purple-700">+ Cadastrar Novo Paciente</option>
+                <option value="novo" className="font-medium text-purple-700">
+                  + Cadastrar Novo Paciente
+                </option>
               </select>
-              
+
               {!foundPaciente && (
                 <button
                   type="button"
@@ -567,7 +579,7 @@ function NovoAgendamentoPage() {
                 </button>
               )}
             </div>
-            
+
             {/* Campo de médico */}
             <div>
               <label htmlFor="medico_id" className="block text-sm font-medium text-black mb-2">
@@ -591,7 +603,7 @@ function NovoAgendamentoPage() {
                   ))}
               </select>
             </div>
-            
+
             {/* Campo de status */}
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-black mb-2">
@@ -609,7 +621,7 @@ function NovoAgendamentoPage() {
               </select>
             </div>
           </div>
-          
+
           {/* Campo de observações */}
           <div className="mt-6">
             <label htmlFor="observacoes" className="block text-sm font-medium text-black mb-2">
@@ -626,7 +638,7 @@ function NovoAgendamentoPage() {
               autoComplete="off"
             />
           </div>
-          
+
           {/* Botões do formulário */}
           <div className="mt-8 flex justify-end space-x-4">
             <button
@@ -646,23 +658,34 @@ function NovoAgendamentoPage() {
           </div>
         </form>
       </div>
-      
+
       {/* Modal para cadastro de paciente */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-black">Cadastro Rápido de Paciente</h2>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {/* Campo para nome do paciente */}
               <div>
@@ -683,7 +706,10 @@ function NovoAgendamentoPage() {
 
               {/* Campo para data de nascimento */}
               <div>
-                <label htmlFor="data_nascimento" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="data_nascimento"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Data de Nascimento <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -751,7 +777,10 @@ function NovoAgendamentoPage() {
 
               {/* Campo para tipo sanguíneo */}
               <div>
-                <label htmlFor="tipo_sanguineo" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="tipo_sanguineo"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Tipo Sanguíneo
                 </label>
                 <select
@@ -791,7 +820,10 @@ function NovoAgendamentoPage() {
 
               {/* Campo para histórico médico */}
               <div>
-                <label htmlFor="historico_medico" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="historico_medico"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Histórico Médico
                 </label>
                 <textarea
@@ -829,8 +861,8 @@ function NovoAgendamentoPage() {
 }
 
 // Proteger a rota apenas para recepcionistas e admins
-export default withProtectedRoute([UserRole.ADMIN,UserRole.RECEPCIONISTA])(NovoAgendamentoPage);
-            
+export default withProtectedRoute([UserRole.ADMIN, UserRole.RECEPCIONISTA])(NovoAgendamentoPage);
+
 /*             
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
