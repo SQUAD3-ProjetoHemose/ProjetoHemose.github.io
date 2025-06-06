@@ -6,7 +6,7 @@ class ApiClient {
 
   constructor() {
     this.baseURL =
-      process.env.NEXT_PUBLIC_API_URL || 'https://hemose-backend-19dc5c1c172f.herokuapp.com/';
+      process.env.NEXT_PUBLIC_API_URL || 'https://hemose-backend-19dc5c1c172f.herokuapp.com';
   }
 
   // Método privado para obter token de autenticação
