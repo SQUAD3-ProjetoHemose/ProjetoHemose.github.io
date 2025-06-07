@@ -8,11 +8,11 @@ import ProntuarioEletronico from '@/components/medico/ProntuarioEletronico';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ArrowLeft, 
-  User, 
-  Calendar, 
-  Phone, 
+import {
+  ArrowLeft,
+  User,
+  Calendar,
+  Phone,
   Mail,
   MapPin,
   Edit,
@@ -23,7 +23,7 @@ import {
   Clock,
   AlertTriangle,
   Stethoscope,
-  Printer
+  Printer,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PacientesService } from '@/lib/services/pacientes.service';
@@ -36,7 +36,7 @@ interface Paciente {
   telefone?: string;
   email?: string;
   sexo?: string;
-  status: string;
+  status?: string; // Status pode ser indefinido para alinhar com o tipo de dados do serviço
   data_nascimento: string;
   endereco?: string; // Mudado de objeto para string para alinhar com o serviço
   contato_emergencia?: {
@@ -68,7 +68,7 @@ function MedicoPacienteDetalhePage() {
   const params = useParams();
   const router = useRouter();
   const pacienteId = parseInt(params.id as string);
-  
+
   const [paciente, setPaciente] = useState<Paciente | null>(null);
   const [resumoMedico, setResumoMedico] = useState<ResumoMedico | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,15 +86,21 @@ function MedicoPacienteDetalhePage() {
       setIsLoading(true);
       const dados = await PacientesService.getPacienteById(pacienteId);
       setPaciente(dados);
-      
+
       // Simular resumo médico - em produção seria uma chamada à API específica
       setResumoMedico({
         consultas_total: Math.floor(Math.random() * 20) + 1,
-        ultima_consulta: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString() : null,
-        proxima_consulta: Math.random() > 0.5 ? new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString() : null,
+        ultima_consulta:
+          Math.random() > 0.3
+            ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+            : null,
+        proxima_consulta:
+          Math.random() > 0.5
+            ? new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+            : null,
         medicamentos_ativos: Math.floor(Math.random() * 5),
         exames_pendentes: Math.floor(Math.random() * 3),
-        alertas: Math.random() > 0.7 ? ['Hipertensão controlada', 'Alergia à penicilina'] : []
+        alertas: Math.random() > 0.7 ? ['Hipertensão controlada', 'Alergia à penicilina'] : [],
       });
     } catch (error) {
       console.error('Erro ao carregar paciente:', error);
@@ -125,13 +131,18 @@ function MedicoPacienteDetalhePage() {
   };
 
   // Função para obter cor do status
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'ativo': return 'bg-green-100 text-green-800';
-      case 'inativo': return 'bg-gray-100 text-gray-800';
-      case 'bloqueado': return 'bg-red-100 text-red-800';
-      case 'internado': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ativo':
+        return 'bg-green-100 text-green-800';
+      case 'inativo':
+        return 'bg-gray-100 text-gray-800';
+      case 'bloqueado':
+        return 'bg-red-100 text-red-800';
+      case 'internado':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -164,8 +175,8 @@ function MedicoPacienteDetalhePage() {
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Cabeçalho com botão voltar - responsivo */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => router.push('/medico/pacientes')}
           className="gap-2 w-full sm:w-auto"
           size="sm"
@@ -190,15 +201,11 @@ function MedicoPacienteDetalhePage() {
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2">
                   <Badge className={`${getStatusColor(paciente.status)} text-xs sm:text-sm`}>
-                    {paciente.status}
+                    {paciente.status || 'Não informado'}
                   </Badge>
-                  <span className="text-xs sm:text-sm text-gray-600">
-                    {idade} anos
-                  </span>
+                  <span className="text-xs sm:text-sm text-gray-600">{idade} anos</span>
                   {paciente.sexo && (
-                    <span className="text-xs sm:text-sm text-gray-600">
-                      {paciente.sexo}
-                    </span>
+                    <span className="text-xs sm:text-sm text-gray-600">{paciente.sexo}</span>
                   )}
                   {paciente.tipo_sanguineo && (
                     <Badge variant="outline" className="text-xs">
@@ -208,40 +215,39 @@ function MedicoPacienteDetalhePage() {
                 </div>
               </div>
             </div>
-            
-            {/* Botões de ação - responsivos */}
+
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-              <Button 
-                onClick={iniciarConsulta} 
-                size="sm" 
+              <Button
+                onClick={iniciarConsulta}
+                size="sm"
                 className="gap-1 justify-center text-xs sm:text-sm"
               >
                 <Stethoscope className="h-4 w-4" />
                 <span className="hidden sm:inline">Iniciar Consulta</span>
                 <span className="sm:hidden">Consulta</span>
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={agendarConsulta} 
-                size="sm" 
+              <Button
+                variant="outline"
+                onClick={agendarConsulta}
+                size="sm"
                 className="gap-1 justify-center text-xs sm:text-sm"
               >
                 <Calendar className="h-4 w-4" />
                 Agendar
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={editarPaciente} 
-                size="sm" 
+              <Button
+                variant="outline"
+                onClick={editarPaciente}
+                size="sm"
                 className="gap-1 justify-center text-xs sm:text-sm"
               >
                 <Edit className="h-4 w-4" />
                 <span className="hidden sm:inline">Editar</span>
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={imprimirProntuario} 
-                size="sm" 
+              <Button
+                variant="outline"
+                onClick={imprimirProntuario}
+                size="sm"
                 className="gap-1 justify-center text-xs sm:text-sm"
               >
                 <Printer className="h-4 w-4" />
@@ -275,18 +281,20 @@ function MedicoPacienteDetalhePage() {
               </div>
               <div className="text-center col-span-2 sm:col-span-1">
                 <p className="text-xs sm:text-sm text-gray-600">
-                  {resumoMedico.ultima_consulta ? 
-                    `Última: ${new Date(resumoMedico.ultima_consulta).toLocaleDateString('pt-BR')}` : 
-                    'Sem consultas'
-                  }
+                  {resumoMedico.ultima_consulta
+                    ? `Última: ${new Date(resumoMedico.ultima_consulta).toLocaleDateString(
+                        'pt-BR'
+                      )}`
+                    : 'Sem consultas'}
                 </p>
               </div>
               <div className="text-center col-span-2 sm:col-span-3 lg:col-span-1">
                 <p className="text-xs sm:text-sm text-gray-600">
-                  {resumoMedico.proxima_consulta ? 
-                    `Próxima: ${new Date(resumoMedico.proxima_consulta).toLocaleDateString('pt-BR')}` : 
-                    'Sem agendamentos'
-                  }
+                  {resumoMedico.proxima_consulta
+                    ? `Próxima: ${new Date(resumoMedico.proxima_consulta).toLocaleDateString(
+                        'pt-BR'
+                      )}`
+                    : 'Sem agendamentos'}
                 </p>
               </div>
             </div>
@@ -347,11 +355,15 @@ function MedicoPacienteDetalhePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Dados pessoais */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Dados Pessoais</h3>
+                <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
+                  Dados Pessoais
+                </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <span className="truncate">CPF: {PacientesService.formatarCPF(paciente.cpf)}</span>
+                    <span className="truncate">
+                      CPF: {PacientesService.formatarCPF(paciente.cpf)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -375,7 +387,9 @@ function MedicoPacienteDetalhePage() {
                   {paciente.telefone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                      <span className="truncate">{PacientesService.formatarTelefone(paciente.telefone)}</span>
+                      <span className="truncate">
+                        {PacientesService.formatarTelefone(paciente.telefone)}
+                      </span>
                     </div>
                   )}
                   {paciente.email && (
@@ -387,10 +401,12 @@ function MedicoPacienteDetalhePage() {
                 </div>
               </div>
 
-                            {/* Endereço */}
+              {/* Endereço */}
               {paciente.endereco && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Endereço</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
+                    Endereço
+                  </h3>
                   <div className="text-sm space-y-1">
                     <div className="flex items-start gap-2">
                       <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
@@ -405,7 +421,9 @@ function MedicoPacienteDetalhePage() {
 
             {/* Informações médicas adicionais */}
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">Informações Médicas</h3>
+              <h3 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">
+                Informações Médicas
+              </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Alergias */}
                 {paciente.alergias && (
@@ -432,7 +450,9 @@ function MedicoPacienteDetalhePage() {
             {/* Contato de emergência */}
             {paciente.contato_emergencia && (
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">Contato de Emergência</h3>
+                <h3 className="font-semibold text-gray-900 mb-4 text-sm sm:text-base">
+                  Contato de Emergência
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600 block mb-1">Nome:</span>
@@ -440,7 +460,9 @@ function MedicoPacienteDetalhePage() {
                   </div>
                   <div>
                     <span className="text-gray-600 block mb-1">Telefone:</span>
-                    <p className="font-medium">{PacientesService.formatarTelefone(paciente.contato_emergencia.telefone)}</p>
+                    <p className="font-medium">
+                      {PacientesService.formatarTelefone(paciente.contato_emergencia.telefone)}
+                    </p>
                   </div>
                   <div>
                     <span className="text-gray-600 block mb-1">Parentesco:</span>
@@ -454,9 +476,7 @@ function MedicoPacienteDetalhePage() {
       )}
 
       {/* Tab do prontuário eletrônico */}
-      {activeTab === 'prontuario' && (
-        <ProntuarioEletronico pacienteId={pacienteId} />
-      )}
+      {activeTab === 'prontuario' && <ProntuarioEletronico pacienteId={pacienteId} />}
     </div>
   );
 }

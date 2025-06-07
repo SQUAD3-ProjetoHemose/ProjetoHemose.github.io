@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 // Cliente API centralizado para comunicação com o backend
 class ApiClient {
   private baseURL: string;
@@ -478,6 +476,122 @@ export const medicoAPI = {
   // Estatísticas do médico
   getEstatisticasMedico: (periodo?: string) =>
     apiClient.get<any>(`/medico/estatisticas${periodo ? `?periodo=${periodo}` : ''}`),
+};
+
+// Módulo Enfermagem - Triagem, Evolução e Cuidados
+export const enfermagemAPI = {
+  // Dashboard e estatísticas da enfermagem
+  getDashboard: () => apiClient.get<any>('/enfermagem/dashboard'),
+
+  getEstatisticas: (periodo?: string) =>
+    apiClient.get<any>(`/enfermagem/estatisticas${periodo ? `?periodo=${periodo}` : ''}`),
+
+  // Triagem - Obrigatória antes de qualquer procedimento
+  realizarTriagem: (dados: any) => apiClient.post<any>('/enfermagem/triagem', dados),
+
+  buscarTriagensPaciente: (pacienteId: string) =>
+    apiClient.get<any[]>(`/enfermagem/paciente/${pacienteId}/triagens`),
+
+  buscarTriagem: (triagemId: string) => apiClient.get<any>(`/enfermagem/triagem/${triagemId}`),
+
+  atualizarTriagem: (triagemId: string, dados: any) =>
+    apiClient.patch<any>(`/enfermagem/triagem/${triagemId}`, dados),
+
+  verificarTriagemObrigatoria: (pacienteId: string) =>
+    apiClient.get<{ triagemRealizada: boolean }>(
+      `/enfermagem/paciente/${pacienteId}/triagem/verificar`
+    ),
+
+  // Suporte médico para triagem
+  adicionarSuporteMedicoTriagem: (triagemId: string, observacoesMedicas: string) =>
+    apiClient.post<any>(`/enfermagem/triagem/${triagemId}/suporte-medico`, { observacoesMedicas }),
+
+  // Evolução de Enfermagem - Inclui sinais vitais
+  registrarEvolucao: (dados: any) => apiClient.post<any>('/enfermagem/evolucao', dados),
+
+  buscarEvolucoesPaciente: (pacienteId: string) =>
+    apiClient.get<any[]>(`/enfermagem/paciente/${pacienteId}/evolucoes`),
+
+  // Sinais Vitais
+  registrarSinaisVitais: (pacienteId: string, sinais: any) =>
+    apiClient.post<any>(`/enfermagem/sinais-vitais/${pacienteId}`, sinais),
+
+  buscarSinaisVitaisPaciente: (pacienteId: string, limite?: number) =>
+    apiClient.get<any[]>(`/enfermagem/sinais-vitais/${pacienteId}?limite=${limite || 10}`),
+
+  // Medicamentos - Administração
+  getMedicamentosAdministrar: () => apiClient.get<any[]>('/enfermagem/medicamentos/administrar'),
+
+  administrarMedicamento: (medicamentoId: string, observacoes?: string) =>
+    apiClient.post<any>(`/enfermagem/medicamentos/${medicamentoId}/administrar`, { observacoes }),
+
+  getMedicamentosPaciente: (pacienteId: string) =>
+    apiClient.get<any[]>(`/enfermagem/paciente/${pacienteId}/medicamentos`),
+
+  // Leitos e Internação
+  getLeitos: () => apiClient.get<any[]>('/enfermagem/leitos'),
+
+  atualizarStatusLeito: (leitoId: string, status: string) =>
+    apiClient.patch<any>(`/enfermagem/leitos/${leitoId}/status`, { status }),
+
+  getLeitosDisponiveis: () => apiClient.get<any[]>('/enfermagem/leitos/disponiveis'),
+
+  getLeitosOcupados: () => apiClient.get<any[]>('/enfermagem/leitos/ocupados'),
+
+  // Fila de Espera
+  getFilaEspera: () => apiClient.get<any[]>('/enfermagem/fila-espera'),
+
+  // Pacientes Urgentes e Críticos
+  getPacientesUrgentes: () => apiClient.get<any[]>('/enfermagem/pacientes/urgentes'),
+
+  getPacientesCriticos: () => apiClient.get<any[]>('/enfermagem/pacientes/criticos'),
+
+  // Procedimentos de Enfermagem
+  registrarProcedimento: (dados: any) => apiClient.post<any>('/enfermagem/procedimentos', dados),
+
+  buscarProcedimentosPaciente: (pacienteId: string) =>
+    apiClient.get<any[]>(`/enfermagem/paciente/${pacienteId}/procedimentos`),
+
+  // Cuidados e Observações
+  registrarObservacao: (pacienteId: string, observacao: string) =>
+    apiClient.post<any>(`/enfermagem/paciente/${pacienteId}/observacoes`, { observacao }),
+
+  buscarObservacoesPaciente: (pacienteId: string) =>
+    apiClient.get<any[]>(`/enfermagem/paciente/${pacienteId}/observacoes`),
+
+  // Escalas e Turnos
+  getEscalaTurno: () => apiClient.get<any[]>('/enfermagem/escala-turno'),
+
+  registrarPassagemTurno: (dados: any) => apiClient.post<any>('/enfermagem/passagem-turno', dados),
+
+  // Relatórios de Enfermagem
+  getRelatorioTriagens: (dataInicio: string, dataFim: string) =>
+    apiClient.get<any>(
+      `/enfermagem/relatorios/triagens?dataInicio=${dataInicio}&dataFim=${dataFim}`
+    ),
+
+  getRelatorioEvolucoes: (dataInicio: string, dataFim: string) =>
+    apiClient.get<any>(
+      `/enfermagem/relatorios/evolucoes?dataInicio=${dataInicio}&dataFim=${dataFim}`
+    ),
+
+  getRelatorioMedicamentos: (dataInicio: string, dataFim: string) =>
+    apiClient.get<any>(
+      `/enfermagem/relatorios/medicamentos?dataInicio=${dataInicio}&dataFim=${dataFim}`
+    ),
+
+  // Exportar relatórios
+  exportarTriagensCSV: (dataInicio: string, dataFim: string) =>
+    apiClient.downloadFile(
+      `/enfermagem/export/triagens?dataInicio=${dataInicio}&dataFim=${dataFim}`,
+      `triagens-${dataInicio}-${dataFim}.csv`
+    ),
+
+  exportarEvolucoesCSV: (dataInicio: string, dataFim: string) =>
+    apiClient.downloadFile(
+      `/enfermagem/export/evolucoes?dataInicio=${dataInicio}&dataFim=${dataFim}`,
+      `evolucoes-${dataInicio}-${dataFim}.csv`
+    ),
 };
 
 /* 

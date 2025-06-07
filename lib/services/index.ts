@@ -1,6 +1,7 @@
 // Exportações centralizadas dos serviços
-export { AuthService } from './auth.service';
 export { AgendamentosService } from './agendamentos.service';
+export { AuthService } from './auth.service';
+export { EnfermagemService } from './enfermagem.service';
 export { PacientesService } from './pacientes.service';
 export { UsersService } from './users.service';
 

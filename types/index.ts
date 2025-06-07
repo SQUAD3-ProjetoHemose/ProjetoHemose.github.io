@@ -23,6 +23,7 @@ export enum UserRole {
   MEDICO = 'medico',
   ENFERMEIRA = 'enfermeira',
   RECEPCIONISTA = 'recepcionista',
+  TECNICA_ENFERMAGEM = 'tecnica_enfermagem', // Nova role
 }
 
 // Interfaces de Usuário
@@ -64,13 +65,13 @@ export interface Paciente {
   nome: string;
   cpf: string;
   data_nascimento: string;
-  sexo: 'M' | 'F';
+  sexo?: 'M' | 'F';
   telefone: string;
   email: string;
   endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
   contato_emergencia_nome?: string;
   contato_emergencia_telefone?: string;
   observacoes?: string;

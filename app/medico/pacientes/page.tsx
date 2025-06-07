@@ -6,10 +6,10 @@ import { UserRole } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, 
-  Search, 
-  Eye, 
+import {
+  Users,
+  Search,
+  Eye,
   Calendar,
   User,
   Phone,
@@ -17,26 +17,26 @@ import {
   Filter,
   MoreVertical,
   FileText,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PacientesService } from '@/lib/services/pacientes.service';
 
-// Interface para paciente na listagem - alinhada com o serviço
+// Interface para paciente na listagem
 interface Paciente {
   id: number;
   nome: string;
   cpf: string;
-  data_nascimento: string; // Mudado de dataNascimento para data_nascimento
+  data_nascimento: string;
   telefone?: string;
   email?: string;
   endereco?: string;
   tipo_sanguineo?: string;
   alergias?: string;
   historico_medico?: string;
-  status: string;
-  sexo?: string; // Adicionado como opcional
-  ultimaConsulta?: string; // Mantido para compatibilidade
+  status?: string;
+  sexo?: string;
+  ultimaConsulta?: string;
 }
 
 function MedicoPacientesPage() {
@@ -64,14 +64,15 @@ function MedicoPacientesPage() {
   };
 
   // Filtrar pacientes baseado na busca
-  const pacientesFiltrados = pacientes.filter(paciente => {
-    const matchesBusca = !termoBusca || 
+  const pacientesFiltrados = pacientes.filter((paciente) => {
+    const matchesBusca =
+      !termoBusca ||
       paciente.nome.toLowerCase().includes(termoBusca.toLowerCase()) ||
       paciente.cpf.includes(termoBusca) ||
       (paciente.telefone && paciente.telefone.includes(termoBusca));
-    
+
     const matchesStatus = filtroStatus === 'todos' || paciente.status === filtroStatus;
-    
+
     return matchesBusca && matchesStatus;
   });
 
@@ -98,11 +99,16 @@ function MedicoPacientesPage() {
   // Função para obter cor do status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ativo': return 'bg-green-100 text-green-800';
-      case 'inativo': return 'bg-gray-100 text-gray-800';
-      case 'bloqueado': return 'bg-red-100 text-red-800';
-      case 'internado': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ativo':
+        return 'bg-green-100 text-green-800';
+      case 'inativo':
+        return 'bg-gray-100 text-gray-800';
+      case 'bloqueado':
+        return 'bg-red-100 text-red-800';
+      case 'internado':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -121,8 +127,8 @@ function MedicoPacientesPage() {
       {/* Cabeçalho responsivo */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pacientes</h1>
-        <Button 
-          onClick={() => router.push('/medico/pacientes/novo')} 
+        <Button
+          onClick={() => router.push('/medico/pacientes/novo')}
           className="gap-2 w-full sm:w-auto"
           size="sm"
         >
@@ -198,14 +204,16 @@ function MedicoPacientesPage() {
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">
-                {termoBusca ? 'Nenhum paciente encontrado para a busca.' : 'Nenhum paciente cadastrado.'}
+                {termoBusca
+                  ? 'Nenhum paciente encontrado para a busca.'
+                  : 'Nenhum paciente cadastrado.'}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {pacientesFiltrados.map((paciente) => (
-                <div 
-                  key={paciente.id} 
+                <div
+                  key={paciente.id}
                   className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
@@ -219,17 +227,18 @@ function MedicoPacientesPage() {
                             {paciente.nome}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {paciente.data_nascimento ? 
-                              PacientesService.calcularIdade(paciente.data_nascimento) : 'N/A'
-                            } anos 
+                            {paciente.data_nascimento
+                              ? PacientesService.calcularIdade(paciente.data_nascimento)
+                              : 'N/A'}{' '}
+                            anos
                             {paciente.sexo && ` • ${paciente.sexo}`}
                           </p>
                         </div>
-                        <Badge className={getStatusColor(paciente.status)}>
-                          {paciente.status}
+                        <Badge className={getStatusColor(paciente.status || 'inativo')}>
+                          {paciente.status || 'inativo'}
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 flex-shrink-0" />
@@ -255,14 +264,15 @@ function MedicoPacientesPage() {
 
                       {paciente.ultimaConsulta && (
                         <div className="mt-2 text-xs text-gray-500">
-                          Última consulta: {new Date(paciente.ultimaConsulta).toLocaleDateString('pt-BR')}
+                          Última consulta:{' '}
+                          {new Date(paciente.ultimaConsulta).toLocaleDateString('pt-BR')}
                         </div>
                       )}
                     </div>
 
                     {/* Botões de ação responsivos */}
                     <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full sm:w-auto lg:w-auto">
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={() => verProntuario(paciente.id)}
                         className="gap-1 justify-start text-xs sm:text-sm"
@@ -272,8 +282,8 @@ function MedicoPacientesPage() {
                         <span className="hidden sm:inline">Ver Prontuário</span>
                         <span className="sm:hidden">Prontuário</span>
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => agendarConsulta(paciente.id)}
                         className="gap-1 justify-start text-xs sm:text-sm"
@@ -282,8 +292,8 @@ function MedicoPacientesPage() {
                         <Calendar className="h-4 w-4" />
                         Agendar
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => iniciarConsulta(paciente.id)}
                         className="gap-1 justify-start text-xs sm:text-sm"
@@ -293,8 +303,8 @@ function MedicoPacientesPage() {
                         <span className="hidden sm:inline">Iniciar Consulta</span>
                         <span className="sm:hidden">Consulta</span>
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => verHistorico(paciente.id)}
                         className="gap-1 justify-start text-xs sm:text-sm"
@@ -322,9 +332,7 @@ function MedicoPacientesPage() {
                 <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                   Total Pacientes
                 </p>
-                <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {pacientes.length}
-                </p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{pacientes.length}</p>
               </div>
             </div>
           </CardContent>
@@ -339,7 +347,7 @@ function MedicoPacientesPage() {
                   Pacientes Ativos
                 </p>
                 <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {pacientes.filter(p => p.status === 'ativo').length}
+                  {pacientes.filter((p) => p.status === 'ativo').length}
                 </p>
               </div>
             </div>
@@ -351,11 +359,9 @@ function MedicoPacientesPage() {
             <div className="flex items-center">
               <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
               <div className="ml-3 sm:ml-4 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-                  Internados
-                </p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Internados</p>
                 <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {pacientes.filter(p => p.status === 'internado').length}
+                  {pacientes.filter((p) => p.status === 'internado').length}
                 </p>
               </div>
             </div>
@@ -371,9 +377,13 @@ function MedicoPacientesPage() {
                   Consulta Hoje
                 </p>
                 <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {pacientes.filter(p => p.ultimaConsulta && 
-                    new Date(p.ultimaConsulta).toDateString() === new Date().toDateString()
-                  ).length}
+                  {
+                    pacientes.filter(
+                      (p) =>
+                        p.ultimaConsulta &&
+                        new Date(p.ultimaConsulta).toDateString() === new Date().toDateString()
+                    ).length
+                  }
                 </p>
               </div>
             </div>
