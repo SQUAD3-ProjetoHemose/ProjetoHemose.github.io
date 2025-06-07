@@ -1,11 +1,5 @@
+import { CreateUserDto, UpdateUserDto, User, UserRole } from '../../types';
 import { usersAPI } from '../api';
-import { 
-  User, 
-  CreateUserDto, 
-  UpdateUserDto,
-  UserRole,
-  PaginationParams 
-} from '../../types';
 
 export class UsersService {
   // Listar todos os usuários
@@ -60,7 +54,7 @@ export class UsersService {
       [UserRole.ADMIN]: 'Administrador',
       [UserRole.MEDICO]: 'Médico',
       [UserRole.ENFERMEIRA]: 'Enfermeira',
-      [UserRole.RECEPCIONISTA]: 'Recepcionista'
+      [UserRole.RECEPCIONISTA]: 'Recepcionista',
     };
     return types[tipo] || tipo;
   }
@@ -71,7 +65,7 @@ export class UsersService {
       [UserRole.ADMIN]: 'bg-purple-100 text-purple-800',
       [UserRole.MEDICO]: 'bg-blue-100 text-blue-800',
       [UserRole.ENFERMEIRA]: 'bg-green-100 text-green-800',
-      [UserRole.RECEPCIONISTA]: 'bg-yellow-100 text-yellow-800'
+      [UserRole.RECEPCIONISTA]: 'bg-yellow-100 text-yellow-800',
     };
     return colors[tipo] || 'bg-gray-100 text-gray-800';
   }
@@ -91,20 +85,19 @@ export class UsersService {
 
   // Filtrar usuários por status
   static filtrarPorStatus(users: User[], ativo: boolean): User[] {
-    return users.filter(user => user.ativo === ativo);
+    return users.filter((user) => user.ativo === ativo);
   }
-
   // Buscar usuários por termo
   static buscarUsuarios(users: User[], term: string): User[] {
     if (!term) return users;
-    
+
     const termLower = term.toLowerCase();
-    return users.filter(user => 
-      user.nome.toLowerCase().includes(termLower) ||
-      user.email.toLowerCase().includes(termLower) ||
-      (user.especialidade && user.especialidade.toLowerCase().includes(termLower)) ||
-      (user.crm && user.crm.toLowerCase().includes(termLower)) ||
-      (user.coren && user.coren.toLowerCase().includes(termLower))
+    return users.filter(
+      (user) =>
+        user.nome.toLowerCase().includes(termLower) ||
+        user.email.toLowerCase().includes(termLower) ||
+        (user.especialidade && user.especialidade.toLowerCase().includes(termLower)) ||
+        (user.registroProfissional && user.registroProfissional.toLowerCase().includes(termLower))
     );
   }
 }

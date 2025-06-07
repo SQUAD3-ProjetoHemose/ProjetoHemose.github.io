@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, X, Printer, FileText, Eye } from 'lucide-react';
+import { useAuthentication } from '@/hooks';
+import { Eye, FileText, Printer, Save, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import RichTextEditor from './RichTextEditor';
 
 // Interface para formulário de atestado
@@ -24,7 +25,7 @@ CID: {{cid}}
 
 Recomendações: {{recomendacoes}}
 
-Local e data: {{local}}, {{dataEmissao}}`
+Local e data: {{local}}, {{dataEmissao}}`,
   },
   comparecimento: {
     titulo: 'Declaração de Comparecimento',
@@ -32,7 +33,7 @@ Local e data: {{local}}, {{dataEmissao}}`
 
 A presente declaração é emitida para os devidos fins.
 
-Local e data: {{local}}, {{dataEmissao}}`
+Local e data: {{local}}, {{dataEmissao}}`,
   },
   acompanhamento: {
     titulo: 'Atestado de Acompanhamento',
@@ -40,11 +41,17 @@ Local e data: {{local}}, {{dataEmissao}}`
 
 O acompanhante deverá afastar-se de suas atividades laborais durante o período necessário.
 
-Local e data: {{local}}, {{dataEmissao}}`
-  }
+Local e data: {{local}}, {{dataEmissao}}`,
+  },
 };
 
-export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNome }: AtestadoFormProps) {
+export default function AtestadoForm({
+  onSave,
+  onCancel,
+  pacienteId,
+  pacienteNome,
+}: AtestadoFormProps) {
+  const { user } = useAuthentication();
   const [formData, setFormData] = useState({
     tipo: 'afastamento',
     titulo: '',
@@ -56,7 +63,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
     cid: '',
     recomendacoes: '',
     horarioInicio: '08:00',
-    horarioFim: '09:00'
+    horarioFim: '09:00',
   });
 
   const [previewMode, setPreviewMode] = useState(false);
@@ -67,33 +74,35 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
   const aplicarTemplate = () => {
     const template = templatesAtestado[formData.tipo as keyof typeof templatesAtestado];
     if (template) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         titulo: template.titulo,
-        conteudo: template.texto
+        conteudo: template.texto,
       }));
     }
   };
 
   // Manipular mudanças no formulário
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Auto-calcular data fim baseada nos dias
     if (name === 'dias' || name === 'dataInicio') {
       const inicio = name === 'dataInicio' ? new Date(value) : new Date(formData.dataInicio);
       const diasNum = name === 'dias' ? parseInt(value) : parseInt(formData.dias);
-      
+
       if (!isNaN(diasNum) && diasNum > 0) {
         const fim = new Date(inicio);
         fim.setDate(fim.getDate() + diasNum - 1);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          dataFim: fim.toISOString().split('T')[0]
+          dataFim: fim.toISOString().split('T')[0],
         }));
       }
     }
@@ -103,7 +112,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
   const processarTemplate = (texto: string): string => {
     const hoje = new Date();
     const dataFimObj = new Date(formData.dataFim);
-    
+
     return texto
       .replace(/{{nome}}/g, pacienteNome)
       .replace(/{{cpf}}/g, '___.___.___-__') // Placeholder para CPF
@@ -139,11 +148,10 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
               </style>
             </head>
             <body>
-              ${printContent.innerHTML}
-              <div class="signature">
+              ${printContent.innerHTML}              <div class="signature">
                 <div class="line"></div>
-                <p>Dr(a). Nome do Médico</p>
-                <p>CRM: 12345</p>
+                <p>Dr(a). ${user?.nome || 'Nome do Médico'}</p>
+                <p>CRM: ${user?.registroProfissional || 'N/A'}</p>
               </div>
             </body>
           </html>
@@ -164,7 +172,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
         ...formData,
         pacienteId,
         conteudoProcessado: processarTemplate(formData.conteudo),
-        dataEmissao: new Date().toISOString()
+        dataEmissao: new Date().toISOString(),
       };
 
       // Simular salvamento
@@ -186,10 +194,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
             {previewMode ? 'Pré-visualização do Atestado' : 'Novo Atestado Médico'}
           </CardTitle>
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setPreviewMode(!previewMode)}
-            >
+            <Button variant="outline" onClick={() => setPreviewMode(!previewMode)}>
               <Eye className="h-4 w-4 mr-2" />
               {previewMode ? 'Editar' : 'Pré-visualizar'}
             </Button>
@@ -202,7 +207,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {previewMode ? (
           // Modo de pré-visualização
@@ -212,7 +217,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
               <p className="text-gray-600">Hemocentro de Sergipe</p>
               <h3 className="text-xl font-semibold mt-4">{formData.titulo}</h3>
             </div>
-            
+
             <div className="content whitespace-pre-line text-justify leading-relaxed">
               {processarTemplate(formData.conteudo)}
             </div>
@@ -245,9 +250,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
 
               {/* Paciente */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Paciente
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
                 <input
                   type="text"
                   value={pacienteNome}
@@ -286,9 +289,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Data Fim
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Fim</label>
                   <input
                     type="date"
                     name="dataFim"
@@ -346,9 +347,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CID-10
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">CID-10</label>
                 <input
                   type="text"
                   name="cid"
@@ -362,9 +361,7 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
 
             {/* Recomendações */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recomendações
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Recomendações</label>
               <input
                 type="text"
                 name="recomendacoes"
@@ -397,12 +394,13 @@ export default function AtestadoForm({ onSave, onCancel, pacienteId, pacienteNom
               </label>
               <RichTextEditor
                 value={formData.conteudo}
-                onChange={(value) => setFormData(prev => ({ ...prev, conteudo: value }))}
+                onChange={(value) => setFormData((prev) => ({ ...prev, conteudo: value }))}
                 placeholder="Digite o conteúdo do atestado..."
                 height="200px"
               />
               <div className="text-xs text-gray-500 mt-1">
-                Use {`{{nome}}, {{cpf}}, {{dias}}, {{dataInicio}}, {{dataFim}}, etc. como variáveis`}
+                Use{' '}
+                {`{{nome}}, {{cpf}}, {{dias}}, {{dataInicio}}, {{dataFim}}, etc. como variáveis`}
               </div>
             </div>
 

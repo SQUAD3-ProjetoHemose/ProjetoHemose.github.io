@@ -1,34 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { withProtectedRoute } from '@/hooks/useAuthentication';
 import { useUserStore } from '@/store';
-import { UserRole, User, CreateUserDto } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Edit,
-  Trash2,
-  Eye,
-  Filter
-} from 'lucide-react';
+import { CreateUserDto, User, UserRole } from '@/types';
+import { Edit, Search, Trash2, UserPlus, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 function AdminUsersPage() {
   // Estado do store de usuários
-  const {
-    users,
-    loading,
-    error,
-    fetchUsers,
-    createUser,
-    updateUser,
-    deleteUser
-  } = useUserStore();
+  const { users, loading, error, fetchUsers, createUser, updateUser, deleteUser } = useUserStore();
 
   // Estado local do componente
   const [activeTab, setActiveTab] = useState('todos');
@@ -40,7 +24,7 @@ function AdminUsersPage() {
     email: '',
     senha: '',
     tipo: UserRole.MEDICO,
-    ativo: true
+    ativo: true,
   });
 
   // Buscar usuários na inicialização
@@ -49,9 +33,10 @@ function AdminUsersPage() {
   }, [fetchUsers]);
 
   // Filtrar usuários usando os dados do store
-  const filteredUsers = users.filter(user => {
-    const matchSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = users.filter((user) => {
+    const matchSearch =
+      user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchTab = activeTab === 'todos' || user.tipo === activeTab;
     return matchSearch && matchTab;
   });
@@ -64,11 +49,10 @@ function AdminUsersPage() {
       email: '',
       senha: '',
       tipo: UserRole.MEDICO,
-      ativo: true
+      ativo: true,
     });
     setShowModal(true);
   };
-
   // Abrir modal para editar usuário
   const openEditModal = (user: User) => {
     setEditingUser(user);
@@ -79,8 +63,7 @@ function AdminUsersPage() {
       tipo: user.tipo,
       ativo: user.ativo,
       especialidade: user.especialidade,
-      crm: user.crm,
-      coren: user.coren
+      registroProfissional: user.registroProfissional,
     });
     setShowModal(true);
   };
@@ -89,17 +72,17 @@ function AdminUsersPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   // Submeter formulário usando o store
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingUser) {
         // Se editando e senha vazia, remover do payload
@@ -112,7 +95,7 @@ function AdminUsersPage() {
       } else {
         await createUser(formData);
       }
-      
+
       setShowModal(false);
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
@@ -138,7 +121,7 @@ function AdminUsersPage() {
       [UserRole.ADMIN]: 'Administrador',
       [UserRole.MEDICO]: 'Médico',
       [UserRole.ENFERMEIRA]: 'Enfermeira',
-      [UserRole.RECEPCIONISTA]: 'Recepcionista'
+      [UserRole.RECEPCIONISTA]: 'Recepcionista',
     };
     return types[tipo] || tipo;
   };
@@ -149,7 +132,7 @@ function AdminUsersPage() {
       [UserRole.ADMIN]: 'bg-purple-100 text-purple-800',
       [UserRole.MEDICO]: 'bg-blue-100 text-blue-800',
       [UserRole.ENFERMEIRA]: 'bg-green-100 text-green-800',
-      [UserRole.RECEPCIONISTA]: 'bg-yellow-100 text-yellow-800'
+      [UserRole.RECEPCIONISTA]: 'bg-yellow-100 text-yellow-800',
     };
     return colors[tipo] || 'bg-gray-100 text-gray-800';
   };
@@ -197,9 +180,7 @@ function AdminUsersPage() {
         <TabsContent value={activeTab}>
           <Card>
             <CardHeader>
-              <CardTitle>
-                Usuários ({filteredUsers.length})
-              </CardTitle>
+              <CardTitle>Usuários ({filteredUsers.length})</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -224,25 +205,31 @@ function AdminUsersPage() {
                             <Badge className={getUserTypeColor(user.tipo)}>
                               {getUserTypeName(user.tipo)}
                             </Badge>
-                            <Badge className={user.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            <Badge
+                              className={
+                                user.ativo
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }
+                            >
                               {user.ativo ? 'Ativo' : 'Inativo'}
                             </Badge>
                           </div>
-                          
+
                           <p className="text-sm text-gray-600 mb-1">{user.email}</p>
-                          
                           {user.especialidade && (
-                            <p className="text-sm text-gray-500">Especialidade: {user.especialidade}</p>
+                            <p className="text-sm text-gray-500">
+                              Especialidade: {user.especialidade}
+                            </p>
                           )}
-                          
-                          {user.crm && (
-                            <p className="text-sm text-gray-500">CRM: {user.crm}</p>
+
+                          {user.registroProfissional && (
+                            <p className="text-sm text-gray-500">
+                              {user.tipo === UserRole.MEDICO ? 'CRM' : 'COREN'}:{' '}
+                              {user.registroProfissional}
+                            </p>
                           )}
-                          
-                          {user.coren && (
-                            <p className="text-sm text-gray-500">COREN: {user.coren}</p>
-                          )}
-                          
+
                           <p className="text-xs text-gray-400 mt-2">
                             Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </p>
@@ -252,9 +239,9 @@ function AdminUsersPage() {
                           <Button variant="outline" size="sm" onClick={() => openEditModal(user)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleDelete(user.id)}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -285,12 +272,10 @@ function AdminUsersPage() {
             <h2 className="text-xl font-semibold mb-4">
               {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
                 <input
                   type="text"
                   name="nome"
@@ -300,11 +285,8 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                 <input
                   type="email"
                   name="email"
@@ -314,7 +296,6 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Senha {editingUser && '(deixe em branco para manter)'}
@@ -328,7 +309,6 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Tipo de Usuário *
@@ -345,54 +325,38 @@ function AdminUsersPage() {
                   <option value={UserRole.RECEPCIONISTA}>Recepcionista</option>
                   <option value={UserRole.ADMIN}>Administrador</option>
                 </select>
-              </div>
-
-              {/* Campos específicos para médicos */}
-              {formData.tipo === UserRole.MEDICO && (
+              </div>{' '}
+              {/* Campos para registro profissional */}
+              {(formData.tipo === UserRole.MEDICO || formData.tipo === UserRole.ENFERMEIRA) && (
                 <>
+                  {formData.tipo === UserRole.MEDICO && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Especialidade
+                      </label>
+                      <input
+                        type="text"
+                        name="especialidade"
+                        value={formData.especialidade || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Especialidade
+                      {formData.tipo === UserRole.MEDICO ? 'CRM' : 'COREN'}
                     </label>
                     <input
                       type="text"
-                      name="especialidade"
-                      value={formData.especialidade || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CRM
-                    </label>
-                    <input
-                      type="text"
-                      name="crm"
-                      value={formData.crm || ''}
+                      name="registroProfissional"
+                      value={formData.registroProfissional || ''}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </>
               )}
-
-              {/* Campo específico para enfermeiras */}
-              {formData.tipo === UserRole.ENFERMEIRA && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    COREN
-                  </label>
-                  <input
-                    type="text"
-                    name="coren"
-                    value={formData.coren || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              )}
-
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -406,14 +370,11 @@ function AdminUsersPage() {
                   Usuário ativo
                 </label>
               </div>
-
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit">
-                  {editingUser ? 'Atualizar' : 'Criar'}
-                </Button>
+                <Button type="submit">{editingUser ? 'Atualizar' : 'Criar'}</Button>
               </div>
             </form>
           </div>

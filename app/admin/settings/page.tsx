@@ -1,21 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { withProtectedRoute } from '@/hooks/useAuthentication';
-import { UserRole } from '@/types'; 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Edit,
-  Trash2,
-  Eye,
-  Filter,
-  Badge
-} from 'lucide-react';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import { UserRole } from '@/types';
+import { Badge, Edit, Search, Trash2, UserPlus, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 // Interface para usuário
 interface User {
@@ -26,6 +17,8 @@ interface User {
   ativo: boolean;
   created_at: string;
   especialidade?: string;
+  registroProfissional?: string;
+  // Campos de compatibilidade (mantidos para backward compatibility)
   crm?: string;
   coren?: string;
 }
@@ -38,6 +31,8 @@ interface FormData {
   tipo: 'admin' | 'medico' | 'enfermeira' | 'recepcionista';
   ativo: boolean;
   especialidade?: string;
+  registroProfissional?: string;
+  // Campos de compatibilidade
   crm?: string;
   coren?: string;
 }
@@ -54,7 +49,7 @@ function AdminUsersPage() {
     email: '',
     senha: '',
     tipo: 'medico',
-    ativo: true
+    ativo: true,
   });
 
   // Buscar usuários
@@ -67,7 +62,7 @@ function AdminUsersPage() {
     try {
       const response = await fetch('/api/users', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -83,9 +78,10 @@ function AdminUsersPage() {
   };
 
   // Filtrar usuários
-  const filteredUsers = users.filter(user => {
-    const matchSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = users.filter((user) => {
+    const matchSearch =
+      user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchTab = activeTab === 'todos' || user.tipo === activeTab;
     return matchSearch && matchTab;
   });
@@ -98,11 +94,10 @@ function AdminUsersPage() {
       email: '',
       senha: '',
       tipo: 'medico',
-      ativo: true
+      ativo: true,
     });
     setShowModal(true);
   };
-
   // Abrir modal para editar usuário
   const openEditModal = (user: User) => {
     setEditingUser(user);
@@ -113,8 +108,10 @@ function AdminUsersPage() {
       tipo: user.tipo,
       ativo: user.ativo,
       especialidade: user.especialidade,
+      registroProfissional: user.registroProfissional || user.crm || user.coren || '',
+      // Mantém compatibilidade com campos antigos
       crm: user.crm,
-      coren: user.coren
+      coren: user.coren,
     });
     setShowModal(true);
   };
@@ -123,21 +120,21 @@ function AdminUsersPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   // Submeter formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users';
       const method = editingUser ? 'PUT' : 'POST';
-      
+
       // Se editando e senha vazia, remover do payload
       const payload = { ...formData };
       if (editingUser && !payload.senha) {
@@ -148,7 +145,7 @@ function AdminUsersPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(payload),
       });
@@ -174,7 +171,7 @@ function AdminUsersPage() {
       const response = await fetch(`/api/users/${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -192,7 +189,7 @@ function AdminUsersPage() {
       admin: 'Administrador',
       medico: 'Médico',
       enfermeira: 'Enfermeira',
-      recepcionista: 'Recepcionista'
+      recepcionista: 'Recepcionista',
     };
     return types[tipo as keyof typeof types] || tipo;
   };
@@ -203,7 +200,7 @@ function AdminUsersPage() {
       admin: 'bg-purple-100 text-purple-800',
       medico: 'bg-blue-100 text-blue-800',
       enfermeira: 'bg-green-100 text-green-800',
-      recepcionista: 'bg-yellow-100 text-yellow-800'
+      recepcionista: 'bg-yellow-100 text-yellow-800',
     };
     return colors[tipo as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -251,9 +248,7 @@ function AdminUsersPage() {
         <TabsContent value={activeTab}>
           <Card>
             <CardHeader>
-              <CardTitle>
-                Usuários ({filteredUsers.length})
-              </CardTitle>
+              <CardTitle>Usuários ({filteredUsers.length})</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -274,25 +269,45 @@ function AdminUsersPage() {
                             <Badge className={getUserTypeColor(user.tipo)}>
                               {getUserTypeName(user.tipo)}
                             </Badge>
-                            <Badge className={user.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            <Badge
+                              className={
+                                user.ativo
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }
+                            >
                               {user.ativo ? 'Ativo' : 'Inativo'}
                             </Badge>
                           </div>
-                          
+
                           <p className="text-sm text-gray-600 mb-1">{user.email}</p>
-                          
                           {user.especialidade && (
-                            <p className="text-sm text-gray-500">Especialidade: {user.especialidade}</p>
+                            <p className="text-sm text-gray-500">
+                              Especialidade: {user.especialidade}
+                            </p>
                           )}
-                          
-                          {user.crm && (
+
+                          {/* Exibe registro profissional unificado ou campos antigos para compatibilidade */}
+                          {user.registroProfissional && (
+                            <p className="text-sm text-gray-500">
+                              {user.tipo === 'medico'
+                                ? 'CRM'
+                                : user.tipo === 'enfermeira'
+                                ? 'COREN'
+                                : 'Registro'}
+                              : {user.registroProfissional}
+                            </p>
+                          )}
+
+                          {/* Fallback para compatibilidade com dados antigos */}
+                          {!user.registroProfissional && user.crm && (
                             <p className="text-sm text-gray-500">CRM: {user.crm}</p>
                           )}
-                          
-                          {user.coren && (
+
+                          {!user.registroProfissional && user.coren && (
                             <p className="text-sm text-gray-500">COREN: {user.coren}</p>
                           )}
-                          
+
                           <p className="text-xs text-gray-400 mt-2">
                             Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </p>
@@ -302,9 +317,9 @@ function AdminUsersPage() {
                           <Button variant="outline" size="sm" onClick={() => openEditModal(user)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleDelete(user.id)}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -335,12 +350,10 @@ function AdminUsersPage() {
             <h2 className="text-xl font-semibold mb-4">
               {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
                 <input
                   type="text"
                   name="nome"
@@ -350,11 +363,8 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                 <input
                   type="email"
                   name="email"
@@ -364,7 +374,6 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Senha {editingUser && '(deixe em branco para manter)'}
@@ -378,7 +387,6 @@ function AdminUsersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Tipo de Usuário *
@@ -395,54 +403,40 @@ function AdminUsersPage() {
                   <option value="recepcionista">Recepcionista</option>
                   <option value="admin">Administrador</option>
                 </select>
-              </div>
-
-              {/* Campos específicos para médicos */}
-              {formData.tipo === 'medico' && (
+              </div>{' '}
+              {/* Campos específicos para médicos e enfermeiras */}
+              {(formData.tipo === 'medico' || formData.tipo === 'enfermeira') && (
                 <>
+                  {formData.tipo === 'medico' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Especialidade
+                      </label>
+                      <input
+                        type="text"
+                        name="especialidade"
+                        value={formData.especialidade || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: Cardiologia, Neurologia..."
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Especialidade
+                      {formData.tipo === 'medico' ? 'CRM' : 'COREN'}
                     </label>
                     <input
                       type="text"
-                      name="especialidade"
-                      value={formData.especialidade || ''}
+                      name="registroProfissional"
+                      value={formData.registroProfissional || ''}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CRM
-                    </label>
-                    <input
-                      type="text"
-                      name="crm"
-                      value={formData.crm || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder={formData.tipo === 'medico' ? 'Ex: 12345/SP' : 'Ex: 123456/SP'}
                     />
                   </div>
                 </>
               )}
-
-              {/* Campo específico para enfermeiras */}
-              {formData.tipo === 'enfermeira' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    COREN
-                  </label>
-                  <input
-                    type="text"
-                    name="coren"
-                    value={formData.coren || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              )}
-
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -456,14 +450,11 @@ function AdminUsersPage() {
                   Usuário ativo
                 </label>
               </div>
-
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit">
-                  {editingUser ? 'Atualizar' : 'Criar'}
-                </Button>
+                <Button type="submit">{editingUser ? 'Atualizar' : 'Criar'}</Button>
               </div>
             </form>
           </div>

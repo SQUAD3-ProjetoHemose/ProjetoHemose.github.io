@@ -33,8 +33,7 @@ export interface User {
   tipo: UserRole;
   ativo: boolean;
   especialidade?: string;
-  crm?: string;
-  coren?: string;
+  registroProfissional?: string;
   created_at: string;
   updated_at: string;
 }
@@ -46,8 +45,7 @@ export interface CreateUserDto {
   tipo: UserRole;
   ativo?: boolean;
   especialidade?: string;
-  crm?: string;
-  coren?: string;
+  registroProfissional?: string;
 }
 
 export interface UpdateUserDto {
@@ -57,8 +55,7 @@ export interface UpdateUserDto {
   tipo?: UserRole;
   ativo?: boolean;
   especialidade?: string;
-  crm?: string;
-  coren?: string;
+  registroProfissional?: string;
 }
 
 // Interfaces de Paciente

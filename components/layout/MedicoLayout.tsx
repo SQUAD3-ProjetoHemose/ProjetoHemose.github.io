@@ -1,25 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useAuthentication } from '@/hooks';
 import {
-  Menu,
-  X,
-  LogOut,
-  Calendar,
-  Users,
-  FileText,
-  UserCheck,
-  Stethoscope,
   Activity,
-  AlertTriangle,
-  ClipboardList,
   BarChart3,
+  Bell,
+  Calendar,
+  ClipboardList,
+  FileText,
+  LogOut,
+  Menu,
   Search,
-  Bell
+  Stethoscope,
+  Users,
+  X,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 interface MedicoLayoutProps {
   children: React.ReactNode;
@@ -30,44 +28,44 @@ const navigationItems = [
     name: 'Dashboard',
     href: '/medico',
     icon: Activity,
-    description: 'Fila de espera e visão geral'
+    description: 'Fila de espera e visão geral',
   },
   {
     name: 'Agenda',
     href: '/medico/agenda',
     icon: Calendar,
-    description: 'Agendamentos e consultas'
+    description: 'Agendamentos e consultas',
   },
   {
     name: 'Pacientes',
     href: '/medico/pacientes',
     icon: Users,
-    description: 'Buscar e gerenciar pacientes'
+    description: 'Buscar e gerenciar pacientes',
   },
   {
     name: 'Prontuários',
     href: '/medico/prontuarios',
     icon: FileText,
-    description: 'Prontuários eletrônicos'
+    description: 'Prontuários eletrônicos',
   },
   {
     name: 'Prescrições',
     href: '/medico/prescricoes',
     icon: ClipboardList,
-    description: 'Prescrições médicas'
+    description: 'Prescrições médicas',
   },
   {
     name: 'Atestados',
     href: '/medico/atestados',
     icon: FileText,
-    description: 'Atestados e declarações'
+    description: 'Atestados e declarações',
   },
   {
     name: 'Relatórios',
     href: '/medico/relatorios',
     icon: BarChart3,
-    description: 'Relatórios e estatísticas'
-  }
+    description: 'Relatórios e estatísticas',
+  },
 ];
 
 export default function MedicoLayout({ children }: MedicoLayoutProps) {
@@ -139,14 +137,14 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
                 <h3 className="text-sm font-medium text-blue-800 mb-2">Ações Rápidas</h3>
                 <div className="space-y-2">
-                  <Link 
+                  <Link
                     href="/medico/pacientes/buscar"
                     className="flex items-center text-xs text-blue-700 hover:text-blue-800 transition-colors"
                   >
                     <Search className="h-3 w-3 mr-2" />
                     Buscar Paciente
                   </Link>
-                  <Link 
+                  <Link
                     href="/medico/atestados/novo"
                     className="flex items-center text-xs text-blue-700 hover:text-blue-800 transition-colors"
                   >
@@ -167,10 +165,10 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
                 </span>
               </div>
               <div className="ml-3 flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">
-                  Dr(a). {user?.nome}
+                <p className="text-sm font-medium text-gray-800 truncate">Dr(a). {user?.nome}</p>
+                <p className="text-xs text-gray-600">
+                  Médico • CRM {user?.registroProfissional || 'N/A'}
                 </p>
-                <p className="text-xs text-gray-600">Médico • CRM {user?.crm || 'N/A'}</p>
               </div>
               <button
                 onClick={handleLogout}
@@ -187,7 +185,10 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
       {/* Sidebar mobile */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+          <div
+            className="fixed inset-0 bg-gray-600 bg-opacity-75"
+            onClick={() => setSidebarOpen(false)}
+          />
           <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
@@ -197,7 +198,7 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
                 <X className="h-6 w-6 text-white" />
               </button>
             </div>
-            
+
             {/* Header mobile */}
             <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-gray-200 bg-blue-700">
               <div className="flex items-center">
@@ -210,7 +211,7 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
                 </div>
               </div>
             </div>
-            
+
             {/* Navigation mobile */}
             <div className="mt-5 h-0 flex-1 overflow-y-auto">
               <nav className="space-y-1 px-2">
@@ -237,7 +238,7 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
                 })}
               </nav>
             </div>
-            
+
             {/* User info mobile */}
             <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
               <div className="flex items-center w-full">
@@ -284,7 +285,7 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
                 <Bell className="h-6 w-6" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
               </button>
-              
+
               {/* Logout */}
               <button
                 onClick={handleLogout}
@@ -300,9 +301,7 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
         {/* Page content */}
         <main className="flex-1 bg-gray-50">
           <div className="py-6">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
           </div>
         </main>
       </div>
