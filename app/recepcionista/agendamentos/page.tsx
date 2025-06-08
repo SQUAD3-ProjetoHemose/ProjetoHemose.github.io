@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
-import { Agendamento, StatusAgendamento, TipoAgendamento } from '@/types';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
+import { Agendamento, StatusAgendamento, TipoAgendamento, UserRole } from '@/types';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,130 +16,158 @@ function AgendamentosPage() {
   const [filteredStatus, setFilteredStatus] = useState<StatusAgendamento | ''>('');
   const [filteredTipo, setFilteredTipo] = useState<TipoAgendamento | ''>('');
   const [filteredMedicoId, setFilteredMedicoId] = useState<number | ''>('');
-  
-  const { 
-    agendamentos, 
-    loading, 
+
+  const {
+    agendamentos,
+    loading,
     error,
-    fetchAgendamentosPorData,
+    fetchAgendamentos,
     confirmarAgendamento,
     cancelarAgendamento,
     realizarAgendamento,
-    registrarFalta
-  } = useAgendamentos();
-  
-  const { pacientes } = usePacientes();
-  const { users, fetchUsers } = useUsers();
-  
-  // Carregar médicos e agendamentos da data selecionada
+    registrarFalta,
+  } = useAgendamentoStore();
+
+  const { pacientes, fetchPacientes } = usePacienteStore();
+  const { users, fetchUsers } = useUserStore();
+
+  // Carregar médicos, pacientes e agendamentos da data selecionada
   useEffect(() => {
     const carregarDados = async () => {
-      await fetchUsers('medico');
-      await fetchAgendamentosPorData(selectedDate);
+      try {
+        await fetchUsers('medico');
+        await fetchPacientes();
+
+        // Buscar agendamentos por data
+        const dataFormatada = format(selectedDate, 'yyyy-MM-dd');
+        await fetchAgendamentos(dataFormatada);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      }
     };
-    
+
     carregarDados();
-  }, [selectedDate]);
-  
+  }, [selectedDate, fetchUsers, fetchPacientes, fetchAgendamentos]);
+
   // Função para navegar para o dia anterior
   const handlePreviousDay = () => {
     setSelectedDate(subDays(selectedDate, 1));
   };
-  
+
   // Função para navegar para o próximo dia
   const handleNextDay = () => {
     setSelectedDate(addDays(selectedDate, 1));
   };
-  
+
   // Função para ir para a página de novo agendamento
   const handleNewAppointment = () => {
     router.push('/recepcionista/agendamentos/novo');
   };
-  
+
   // Função para editar um agendamento
   const handleEditAppointment = (id: number) => {
     router.push(`/recepcionista/agendamentos/editar/${id}`);
   };
-  
+
   // Função para confirmar um agendamento
   const handleConfirmAppointment = async (id: number) => {
     if (window.confirm('Deseja confirmar este agendamento?')) {
       try {
         await confirmarAgendamento(id);
-        await fetchAgendamentosPorData(selectedDate);
+        // Recarregar agendamentos da data atual
+        const dataFormatada = format(selectedDate, 'yyyy-MM-dd');
+        await fetchAgendamentos(dataFormatada);
       } catch (error) {
         console.error('Erro ao confirmar agendamento:', error);
       }
     }
   };
-  
+
   // Função para cancelar um agendamento
   const handleCancelAppointment = async (id: number) => {
     if (window.confirm('Deseja cancelar este agendamento?')) {
       try {
         await cancelarAgendamento(id);
-        await fetchAgendamentosPorData(selectedDate);
+        // Recarregar agendamentos da data atual
+        const dataFormatada = format(selectedDate, 'yyyy-MM-dd');
+        await fetchAgendamentos(dataFormatada);
       } catch (error) {
         console.error('Erro ao cancelar agendamento:', error);
       }
     }
   };
-  
+
   // Função para marcar um agendamento como realizado
   const handleCompleteAppointment = async (id: number) => {
     if (window.confirm('Deseja marcar este agendamento como realizado?')) {
       try {
         await realizarAgendamento(id);
-        await fetchAgendamentosPorData(selectedDate);
+        // Recarregar agendamentos da data atual
+        const dataFormatada = format(selectedDate, 'yyyy-MM-dd');
+        await fetchAgendamentos(dataFormatada);
       } catch (error) {
         console.error('Erro ao marcar agendamento como realizado:', error);
       }
     }
   };
-  
+
   // Função para registrar falta no agendamento
   const handleMissedAppointment = async (id: number) => {
     if (window.confirm('Deseja registrar falta para este agendamento?')) {
       try {
         await registrarFalta(id);
-        await fetchAgendamentosPorData(selectedDate);
+        // Recarregar agendamentos da data atual
+        const dataFormatada = format(selectedDate, 'yyyy-MM-dd');
+        await fetchAgendamentos(dataFormatada);
       } catch (error) {
         console.error('Erro ao registrar falta no agendamento:', error);
       }
     }
   };
-  
+
   // Filtragem de agendamentos
-  const filteredAgendamentos = agendamentos.filter(agendamento => {
+  const filteredAgendamentos = agendamentos.filter((agendamento) => {
     let match = true;
-    
+
     if (filteredStatus && agendamento.status !== filteredStatus) {
       match = false;
     }
-    
+
     if (filteredTipo && agendamento.tipo !== filteredTipo) {
       match = false;
     }
-    
+
     if (filteredMedicoId && agendamento.medico_id !== +filteredMedicoId) {
       match = false;
     }
-    
+
     return match;
   });
-  
-  // Obter nome do paciente por ID
-  const getPacienteNome = (pacienteId: number) => {
-    const paciente = pacientes.find(p => p.id === pacienteId);
+
+  // Obter nome do paciente por ID ou do objeto paciente
+  const getPacienteNome = (agendamento: Agendamento) => {
+    // Primeiro tentar obter do objeto paciente no agendamento
+    if (agendamento.paciente?.nome) {
+      return agendamento.paciente.nome;
+    }
+
+    // Senão, buscar na lista de pacientes
+    const paciente = pacientes.find((p) => p.id === agendamento.paciente_id);
     return paciente ? paciente.nome : 'Paciente não encontrado';
   };
-  
-  // Obter nome do médico por ID
-  const getMedicoNome = (medicoId: number) => {
-    const medico = users.find(u => u.id === medicoId);
+
+  // Obter nome do médico por ID ou do objeto médico
+  const getMedicoNome = (agendamento: Agendamento) => {
+    // Primeiro tentar obter do objeto médico no agendamento
+    if (agendamento.medico?.nome) {
+      return agendamento.medico.nome;
+    }
+
+    // Senão, buscar na lista de usuários
+    const medico = users.find((u) => u.id === agendamento.medico_id);
     return medico ? medico.nome : 'Médico não encontrado';
   };
-  
+
   // Obter cor do status
   const getStatusColor = (status: StatusAgendamento) => {
     switch (status) {
@@ -157,7 +185,7 @@ function AgendamentosPage() {
         return 'bg-blue-100 text-blue-800';
     }
   };
-  
+
   // Traduzir status para português
   const getStatusName = (status: StatusAgendamento) => {
     switch (status) {
@@ -175,7 +203,7 @@ function AgendamentosPage() {
         return status;
     }
   };
-  
+
   // Traduzir tipo para português
   const getTipoName = (tipo: TipoAgendamento) => {
     switch (tipo) {
@@ -194,23 +222,44 @@ function AgendamentosPage() {
 
   if (loading) {
     return (
+<<<<<<< HEAD
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
         <p className="ml-2 text-red-700">Carregando agendamentos...</p>
+=======
+      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
+        <p className="text-purple-700 text-center">Carregando agendamentos...</p>
+>>>>>>> main
       </div>
     );
   }
-  
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <h2 className="text-lg font-semibold text-red-800 mb-2">Erro ao carregar agendamentos</h2>
+        <p className="text-red-600 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        >
+          Recarregar página
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-black">Gerenciamento de Agendamentos</h1>
-      
+    <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-black">Gerenciamento de Agendamentos</h1>
+
       {/* Seleção de Data e Filtros */}
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Navegação de data */}
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={handlePreviousDay}
               className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded"
             >
@@ -219,27 +268,29 @@ function AgendamentosPage() {
             <div className="text-xl font-semibold">
               {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </div>
-            <button 
+            <button
               onClick={handleNextDay}
               className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded"
             >
               Próximo &gt;
             </button>
           </div>
-          
+
           {/* Botão de novo agendamento */}
-          <button 
+          <button
             onClick={handleNewAppointment}
             className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded"
           >
             Novo Agendamento
           </button>
         </div>
-        
+
         {/* Filtros */}
         <div className="mt-4 flex flex-wrap items-center gap-4">
           <div>
-            <label htmlFor="statusFilter" className="block text-sm font-medium text-black mb-1">Status</label>
+            <label htmlFor="statusFilter" className="block text-sm font-medium text-black mb-1">
+              Status
+            </label>
             <select
               id="statusFilter"
               className="border border-red-300 rounded p-2 w-40"
@@ -254,9 +305,11 @@ function AgendamentosPage() {
               <option value={StatusAgendamento.FALTOU}>Faltou</option>
             </select>
           </div>
-          
+
           <div>
-            <label htmlFor="tipoFilter" className="block text-sm font-medium text-black mb-1">Tipo</label>
+            <label htmlFor="tipoFilter" className="block text-sm font-medium text-black mb-1">
+              Tipo
+            </label>
             <select
               id="tipoFilter"
               className="border border-red-300 rounded p-2 w-40"
@@ -270,9 +323,11 @@ function AgendamentosPage() {
               <option value={TipoAgendamento.PROCEDIMENTO}>Procedimento</option>
             </select>
           </div>
-          
+
           <div>
-            <label htmlFor="medicoFilter" className="block text-sm font-medium text-black mb-1">Médico</label>
+            <label htmlFor="medicoFilter" className="block text-sm font-medium text-black mb-1">
+              Médico
+            </label>
             <select
               id="medicoFilter"
               className="border border-red-300 rounded p-2 w-56"
@@ -280,36 +335,58 @@ function AgendamentosPage() {
               onChange={(e) => setFilteredMedicoId(e.target.value ? +e.target.value : '')}
             >
               <option value="">Todos</option>
-              {users.filter(u => u.tipo === 'medico').map(medico => (
-                <option key={medico.id} value={medico.id}>{medico.nome}</option>
-              ))}
+              {users
+                .filter((u) => u.tipo === 'medico')
+                .map((medico) => (
+                  <option key={medico.id} value={medico.id}>
+                    {medico.nome}
+                  </option>
+                ))}
             </select>
           </div>
         </div>
       </div>
-      
+
       {/* Lista de Agendamentos */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Horário
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Paciente
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Tipo
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Médico
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                >
                   Ações
                 </th>
               </tr>
@@ -318,38 +395,38 @@ function AgendamentosPage() {
               {filteredAgendamentos.length > 0 ? (
                 filteredAgendamentos.map((agendamento) => (
                   <tr key={agendamento.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                      {agendamento.horario}
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-black">
+                      {agendamento.hora}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-black">
-                        {getPacienteNome(agendamento.paciente_id)}
+                        {getPacienteNome(agendamento)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black">
-                        {getTipoName(agendamento.tipo)}
-                      </div>
+                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-black">{getTipoName(agendamento.tipo)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black">
-                        {getMedicoNome(agendamento.medico_id)}
-                      </div>
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-black">{getMedicoNome(agendamento)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(agendamento.status)}`}>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                          agendamento.status
+                        )}`}
+                      >
                         {getStatusName(agendamento.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex space-x-2">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
                         <button
                           onClick={() => handleEditAppointment(agendamento.id)}
                           className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
                         >
                           Editar
                         </button>
-                        
+
                         {agendamento.status === StatusAgendamento.AGENDADO && (
                           <button
                             onClick={() => handleConfirmAppointment(agendamento.id)}
@@ -358,8 +435,9 @@ function AgendamentosPage() {
                             Confirmar
                           </button>
                         )}
-                        
-                        {(agendamento.status === StatusAgendamento.AGENDADO || agendamento.status === StatusAgendamento.CONFIRMADO) && (
+
+                        {(agendamento.status === StatusAgendamento.AGENDADO ||
+                          agendamento.status === StatusAgendamento.CONFIRMADO) && (
                           <>
                             <button
                               onClick={() => handleCompleteAppointment(agendamento.id)}
@@ -367,14 +445,14 @@ function AgendamentosPage() {
                             >
                               Atendido
                             </button>
-                            
+
                             <button
                               onClick={() => handleMissedAppointment(agendamento.id)}
                               className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs"
                             >
                               Faltou
                             </button>
-                            
+
                             <button
                               onClick={() => handleCancelAppointment(agendamento.id)}
                               className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs"
@@ -389,7 +467,7 @@ function AgendamentosPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500 text-sm">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
                     Nenhum agendamento encontrado para esta data ou com estes filtros.
                   </td>
                 </tr>
@@ -398,7 +476,7 @@ function AgendamentosPage() {
           </table>
         </div>
       </div>
-      
+
       {/* Resumo do dia */}
       {agendamentos.length > 0 && (
         <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
@@ -411,25 +489,25 @@ function AgendamentosPage() {
             <div className="bg-green-100 p-3 rounded-md">
               <div className="text-green-800 font-semibold">Confirmados</div>
               <div className="text-2xl">
-                {agendamentos.filter(a => a.status === StatusAgendamento.CONFIRMADO).length}
+                {agendamentos.filter((a) => a.status === StatusAgendamento.CONFIRMADO).length}
               </div>
             </div>
             <div className="bg-purple-100 p-3 rounded-md">
               <div className="text-purple-800 font-semibold">Realizados</div>
               <div className="text-2xl">
-                {agendamentos.filter(a => a.status === StatusAgendamento.REALIZADO).length}
+                {agendamentos.filter((a) => a.status === StatusAgendamento.REALIZADO).length}
               </div>
             </div>
             <div className="bg-red-100 p-3 rounded-md">
               <div className="text-red-800 font-semibold">Cancelados</div>
               <div className="text-2xl">
-                {agendamentos.filter(a => a.status === StatusAgendamento.CANCELADO).length}
+                {agendamentos.filter((a) => a.status === StatusAgendamento.CANCELADO).length}
               </div>
             </div>
             <div className="bg-gray-100 p-3 rounded-md">
               <div className="text-gray-800 font-semibold">Faltas</div>
               <div className="text-2xl">
-                {agendamentos.filter(a => a.status === StatusAgendamento.FALTOU).length}
+                {agendamentos.filter((a) => a.status === StatusAgendamento.FALTOU).length}
               </div>
             </div>
           </div>
@@ -440,8 +518,8 @@ function AgendamentosPage() {
 }
 
 // Protege a rota para apenas recepcionista e admin
-export default withAuth(AgendamentosPage, ['recepcionista', 'admin']);
-            
+export default withProtectedRoute([UserRole.ADMIN, UserRole.RECEPCIONISTA])(AgendamentosPage);
+
 /*             
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \

@@ -9,24 +9,27 @@ export default function Home() {
   useEffect(() => {
     // Redireciona automaticamente para a página de login quando o componente for montado
     router.push('/login');
-  }, []);
-  
-  // Esta página nunca será realmente exibida, pois o redirecionamento ocorre antes da renderização
+  }, [router]);
+
+  // Tela de loading enquanto redireciona
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-rose-600"></div>
-      <p className="ml-2 text-rose-700">Redirecionando...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-red-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <span className="text-white font-bold text-2xl">H</span>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">HEMOSE</h1>
+        <p className="text-gray-600 mb-4">Centro de Hemoterapia de Sergipe</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
+        <p className="text-sm text-gray-500 mt-2">Redirecionando...</p>
+      </div>
     </div>
   );
 }
 
-// Função que redireciona automaticamente para a página de login
-// Utilizamos o hook useRouter para navegação client-side
-// O useEffect garante que o redirecionamento ocorra apenas no cliente
-            
-/*             
+/* 
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \
 /    \___ \___ ) \/ (
 \_/\_(____(____|____/
-   */
+*/

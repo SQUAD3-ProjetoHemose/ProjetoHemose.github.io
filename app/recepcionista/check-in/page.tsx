@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import withAuth from '@/lib/withAuth';
-import { useAgendamentos } from '@/lib/apiAgendamento';
-import { usePacientes } from '@/lib/apiPaciente';
-import { useUsers } from '@/lib/apiUser';
-import { StatusAgendamento } from '@/types';
+import { withProtectedRoute } from '@/hooks/useAuthentication';
+import useAgendamentoStore from '@/store/agendamentoStore';
+import usePacienteStore from '@/store/pacienteStore';
+import useUserStore from '@/store/userStore';
+import { StatusAgendamento, UserRole } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -15,18 +15,13 @@ function CheckInPage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [checkedInSuccess, setCheckedInSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const { 
-    agendamentos, 
-    loading, 
-    fetchAgendamentosHoje,
-    fetchAgendamentos,
-    confirmarAgendamento
-  } = useAgendamentos();
-  
-  const { pacientes, fetchPacientes } = usePacientes();
-  const { users } = useUsers();
-  
+
+  const { agendamentos, loading, fetchAgendamentosHoje, fetchAgendamentos, confirmarAgendamento } =
+    useAgendamentoStore();
+
+  const { pacientes, fetchPacientes } = usePacienteStore();
+  const { users } = useUserStore();
+
   // Carregar agendamentos do dia e pacientes
   useEffect(() => {
     const loadData = async () => {
@@ -38,49 +33,49 @@ function CheckInPage() {
         setError('Erro ao carregar dados. Por favor, recarregue a página.');
       }
     };
-    
+
     loadData();
   }, []);
-  
+
   // Buscar agendamentos ou pacientes
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       return;
     }
-    
+
     setIsSearching(true);
     setError(null);
-    
+
     try {
       // Buscar pacientes pelo nome
-      const pacientesEncontrados = pacientes.filter(p => 
+      const pacientesEncontrados = pacientes.filter((p) =>
         p.nome.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      
+
       let resultados: any[] = [];
-      
+
       if (pacientesEncontrados.length > 0) {
         for (const paciente of pacientesEncontrados) {
           // Para cada paciente encontrado, buscar seus agendamentos de hoje
           const today = format(new Date(), 'yyyy-MM-dd');
           const agendamentosPaciente = await fetchAgendamentos(today, undefined, paciente.id);
-          
+
           // Adicionar aos resultados apenas se houver agendamentos
           if (agendamentosPaciente.length > 0) {
             resultados = [
               ...resultados,
-             
+
               ...agendamentosPaciente.map((a: any) => ({
                 ...a,
-                paciente: paciente
-              }))
+                paciente: paciente,
+              })),
             ];
           }
         }
       }
-      
+
       setSearchResults(resultados);
-      
+
       if (resultados.length === 0) {
         setError('Nenhum agendamento encontrado para o paciente informado.');
       }
@@ -91,24 +86,24 @@ function CheckInPage() {
       setIsSearching(false);
     }
   };
-  
+
   // Realizar check-in do paciente
   const handleCheckIn = async (agendamentoId: number) => {
     try {
       setError(null);
       setCheckedInSuccess(null);
-      
+
       // Confirmar o agendamento
       await confirmarAgendamento(agendamentoId);
-      
+
       // Atualizar a lista de agendamentos do dia
       await fetchAgendamentosHoje();
-      
+
       // Limpar resultados de busca e mostrar mensagem de sucesso
       setSearchResults([]);
       setSearchTerm('');
       setCheckedInSuccess('Check-in realizado com sucesso!');
-      
+
       // Limpar a mensagem de sucesso após 3 segundos
       setTimeout(() => {
         setCheckedInSuccess(null);
@@ -118,13 +113,13 @@ function CheckInPage() {
       setError('Erro ao realizar check-in. Por favor, tente novamente.');
     }
   };
-  
+
   // Obter o nome do médico
   const getMedicoNome = (medicoId: number) => {
-    const medico = users.find(u => u.id === medicoId);
+    const medico = users.find((u) => u.id === medicoId);
     return medico ? medico.nome : 'Médico não encontrado';
   };
-  
+
   // Traduzir tipo para português
   const getTipoName = (tipo: string) => {
     switch (tipo) {
@@ -140,11 +135,11 @@ function CheckInPage() {
         return tipo;
     }
   };
-  
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6 text-black">Check-in de Pacientes</h1>
-      
+
       {/* Barra de busca */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-lg font-semibold text-black mb-4">Buscar paciente</h2>
@@ -164,20 +159,20 @@ function CheckInPage() {
             {isSearching ? 'Buscando...' : 'Buscar'}
           </button>
         </div>
-        
+
         {/* Mensagens de erro ou sucesso */}
         {error && (
           <div className="mt-4 bg-red-100 border-l-4 border-amber-500 text-amber-700 p-4">
             <p>{error}</p>
           </div>
         )}
-        
+
         {checkedInSuccess && (
           <div className="mt-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4">
             <p>{checkedInSuccess}</p>
           </div>
         )}
-        
+
         {/* Resultados da busca */}
         {searchResults.length > 0 && (
           <div className="mt-6">
@@ -189,7 +184,8 @@ function CheckInPage() {
                     <div>
                       <p className="font-medium text-black">{resultado.paciente.nome}</p>
                       <p className="text-sm text-black">
-                        {getTipoName(resultado.tipo)} às {resultado.horario} com {getMedicoNome(resultado.medico_id)}
+                        {getTipoName(resultado.tipo)} às {resultado.horario} com{' '}
+                        {getMedicoNome(resultado.medico_id)}
                       </p>
                       {resultado.observacoes && (
                         <p className="text-sm text-black mt-1">Obs: {resultado.observacoes}</p>
@@ -216,13 +212,14 @@ function CheckInPage() {
           </div>
         )}
       </div>
-      
+
       {/* Lista de agendamentos confirmados (com check-in realizado) */}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold text-black mb-4">
-          Pacientes com check-in realizado hoje ({format(new Date(), "dd 'de' MMMM", { locale: ptBR })})
+          Pacientes com check-in realizado hoje (
+          {format(new Date(), "dd 'de' MMMM", { locale: ptBR })})
         </h2>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-20">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
@@ -230,38 +227,50 @@ function CheckInPage() {
           </div>
         ) : (
           <>
-            {agendamentos.filter(a => a.status === StatusAgendamento.CONFIRMADO).length === 0 ? (
+            {agendamentos.filter((a) => a.status === StatusAgendamento.CONFIRMADO).length === 0 ? (
               <p className="text-gray-500">Nenhum paciente realizou check-in hoje.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-red-200">
                   <thead className="bg-red-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                      >
                         Horário
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                      >
                         Paciente
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                      >
                         Tipo
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider"
+                      >
                         Médico
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-red-200">
                     {agendamentos
-                      .filter(a => a.status === StatusAgendamento.CONFIRMADO)
-                      .sort((a, b) => a.horario.localeCompare(b.horario))
+                      .filter((a) => a.status === StatusAgendamento.CONFIRMADO)
+                      .sort((a, b) => a.hora.localeCompare(b.hora))
                       .map((agendamento) => {
-                        const paciente = pacientes.find(p => p.id === agendamento.paciente_id);
-                        
+                        const paciente = pacientes.find((p) => p.id === agendamento.paciente_id);
+
                         return (
                           <tr key={agendamento.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                              {agendamento.horario}
+                              {agendamento.hora}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm font-medium text-black">
@@ -280,8 +289,7 @@ function CheckInPage() {
                             </td>
                           </tr>
                         );
-                      })
-                    }
+                      })}
                   </tbody>
                 </table>
               </div>
@@ -294,8 +302,8 @@ function CheckInPage() {
 }
 
 // Proteger a rota para apenas recepcionista e admin
-export default withAuth(CheckInPage, ['recepcionista', 'admin']);
-            
+export default withProtectedRoute([UserRole.ADMIN, UserRole.RECEPCIONISTA])(CheckInPage);
+
 /*             
   __  ____ ____ _  _ 
  / _\/ ___) ___) )( \

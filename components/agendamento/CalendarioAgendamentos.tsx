@@ -12,7 +12,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Agendamento, StatusAgendamento } from '@/types';
-import { useAgendamentos } from '@/lib/apiAgendamento';
+import useAgendamentoStore from '@/store/agendamentoStore';
 import { useRouter } from 'next/navigation';
 
 // Interface para as propriedades do componente
@@ -33,7 +33,8 @@ const CalendarioAgendamentos: React.FC<CalendarioAgendamentosProps> = ({
   const [calendarDays, setCalendarDays] = useState<Date[]>([]);
   const [agendamentosPorDia, setAgendamentosPorDia] = useState<Map<string, Agendamento[]>>(new Map());
   
-  const { fetchAgendamentos } = useAgendamentos();
+  // Usando o store ao invés do hook legado
+  const { fetchAgendamentos } = useAgendamentoStore();
 
   // Carregar dias do mês atual
   useEffect(() => {
@@ -96,7 +97,7 @@ const CalendarioAgendamentos: React.FC<CalendarioAgendamentosProps> = ({
     };
     
     loadAgendamentos();
-  }, [currentMonth]);
+  }, [currentMonth, fetchAgendamentos]);
 
   // Função para ir para o próximo mês
   const goToNextMonth = () => {

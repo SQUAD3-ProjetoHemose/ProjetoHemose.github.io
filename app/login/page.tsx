@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/authContext';
+import { useAuthentication } from '@/hooks';
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>('');
   const [senha, setSenha] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const { login } = useAuth();
+  const { login } = useAuthentication();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,30 +18,19 @@ export default function LoginPage() {
     setError('');
 
     try {
+      console.log('Tentando fazer login com:', { email }); // Log para debug
       const result = await login(email, senha);
       
-      if (result.success) {
-        // Redirecionar baseado no tipo de usuário
-        switch (result.user?.tipo) {
-          case 'admin':
-            router.push('/admin');
-            break;
-          case 'medico':
-            router.push('/medico');
-            break;
-          case 'enfermeira':
-            router.push('/enfermeira');
-            break;
-          case 'recepcionista':
-            router.push('/recepcionista');
-            break;
-          default:
-            router.push('/');
-        }
-      } else {
+      if (!result.success) {
         setError(result.message || 'Falha na autenticação');
+        return;
       }
+      
+      // O redirecionamento será automático pelo hook useAuthentication
+      // Não precisamos redirecionar manualmente aqui
+
     } catch (err: any) {
+      console.error('Erro no login:', err); // Log para debug
       setError(err.message || 'Ocorreu um erro durante o login');
     } finally {
       setLoading(false);
