@@ -41,7 +41,24 @@
     "eslint": "latest",
     "eslint-config-next": "latest",
     "postcss": "latest",
-    "tailwindcss": "latest",
+    "tailwindcss": "^4.1.8",
     "typescript": "latest"
-  }
+  },
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SQUAD3-ProjetoHemose/SQUAD3-ProjetoHemose.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SQUAD3-ProjetoHemose/SQUAD3-ProjetoHemose.github.io/issues"
+  },
+  "homepage": "https://github.com/SQUAD3-ProjetoHemose/SQUAD3-ProjetoHemose.github.io#readme"
 }
