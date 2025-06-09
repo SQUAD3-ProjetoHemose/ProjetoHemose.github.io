@@ -149,12 +149,12 @@ function CheckInPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Nome do paciente"
-            className="border border-red-300 rounded-md p-2 flex-grow focus:ring-red-500 focus:border-red-500"
+            className="border border-purple-400 rounded-md p-2 flex-grow focus:ring-purple-500 focus:border-purple-500"
           />
           <button
             onClick={handleSearch}
             disabled={isSearching || !searchTerm.trim()}
-            className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded disabled:bg-gray-400"
+            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded disabled:bg-gray-400"
           >
             {isSearching ? 'Buscando...' : 'Buscar'}
           </button>
@@ -177,7 +177,7 @@ function CheckInPage() {
         {searchResults.length > 0 && (
           <div className="mt-6">
             <h3 className="text-md font-semibold text-black mb-2">Agendamentos encontrados</h3>
-            <div className="divide-y divide-red-200">
+            <div className="divide-y divide-purple-200">
               {searchResults.map((resultado) => (
                 <div key={resultado.id} className="py-4">
                   <div className="flex items-center justify-between">
@@ -195,7 +195,7 @@ function CheckInPage() {
                       {resultado.status === StatusAgendamento.AGENDADO ? (
                         <button
                           onClick={() => handleCheckIn(resultado.id)}
-                          className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded"
+                          className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded"
                         >
                           Realizar Check-in
                         </button>
@@ -222,8 +222,8 @@ function CheckInPage() {
 
         {loading ? (
           <div className="flex justify-center items-center h-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
-            <p className="ml-2 text-red-700">Carregando...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+            <p className="ml-2 text-purple-700">Carregando...</p>
           </div>
         ) : (
           <>
@@ -231,8 +231,8 @@ function CheckInPage() {
               <p className="text-gray-500">Nenhum paciente realizou check-in hoje.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-red-200">
-                  <thead className="bg-red-50">
+                <table className="min-w-full divide-y divide-purple-300">
+                  <thead className="bg-purple-50">
                     <tr>
                       <th
                         scope="col"
@@ -260,7 +260,7 @@ function CheckInPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-red-200">
+                  <tbody className="bg-white divide-y divide-purple-200">
                     {agendamentos
                       .filter((a) => a.status === StatusAgendamento.CONFIRMADO)
                       .sort((a, b) => a.hora.localeCompare(b.hora))

@@ -90,14 +90,14 @@ export default function MedicoLayout({ children }: MedicoLayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200 shadow-sm">
           {/* Logo/Header */}
-          <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-gray-200 bg-blue-700">
+          <div className="flex h-16 flex-shrink-0 items-center px-4 border-b border-blue-600 bg-white">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <Stethoscope className="text-blue-700 h-5 w-5" />
+              <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                <Stethoscope className="text-blue-50 h-5 w-5" />
               </div>
               <div className="ml-3">
-                <h1 className="text-lg font-semibold text-white">HEMOSE</h1>
-                <p className="text-xs text-blue-100">Módulo Médico</p>
+                <h1 className="text-lg font-semibold text-blue-800">HEMOSE</h1>
+                <p className="text-xs text-blue-800">Módulo Médico</p>
               </div>
             </div>
           </div>

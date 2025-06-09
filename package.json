@@ -56,7 +56,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/SQUAD3-ProjetoHemose/SQUAD3-ProjetoHemose.github.io/issues"
   },

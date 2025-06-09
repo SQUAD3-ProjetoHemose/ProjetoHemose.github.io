@@ -7,11 +7,11 @@ import { useAuthentication } from '@/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  Clock, 
-  Users, 
-  Activity, 
+import {
+  Calendar,
+  Clock,
+  Users,
+  Activity,
   AlertTriangle,
   FileText,
   Play,
@@ -43,7 +43,7 @@ interface ProximoAtendimento {
 function MedicoDashboardPage() {
   const { user } = useAuthentication();
   const router = useRouter();
-  
+
   // Estados para armazenar dados dinâmicos do médico
   const [stats, setStats] = useState<Stats>({
     pacientesInternados: 0,
@@ -73,7 +73,7 @@ function MedicoDashboardPage() {
     const carregarDadosMedico = async () => {
       try {
         setIsLoading(true);
-        
+
         // Simular dados da fila de espera com prioridades da triagem
         setFilaEspera([
           {
@@ -117,7 +117,7 @@ function MedicoDashboardPage() {
             tipoAtendimento: 'retorno'
           }
         ]);
-        
+
         // Simular próximos agendamentos
         setProximosAtendimentos([
           { id: 1, nome: 'Pedro Santos', horario: '13:30', tipo: 'Consulta' },
@@ -180,7 +180,7 @@ function MedicoDashboardPage() {
           <p className="text-gray-600">Bem-vindo(a), Dr(a). {user.nome}</p>
         )}
       </div>
-      
+
       {/* Cards de estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
@@ -196,7 +196,7 @@ function MedicoDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -210,7 +210,7 @@ function MedicoDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -224,7 +224,7 @@ function MedicoDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -280,7 +280,7 @@ function MedicoDashboardPage() {
                           </p>
                         </div>
                         <div className="flex flex-col gap-2 ml-4">
-                          <Button 
+                          <Button
                             size="sm"
                             onClick={() => iniciarConsulta(paciente.id)}
                             className="bg-blue-600 hover:bg-blue-700 text-white gap-1"
@@ -288,8 +288,8 @@ function MedicoDashboardPage() {
                             <Play className="h-4 w-4" />
                             Iniciar Consulta
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => verHistorico(paciente.id)}
                             className="gap-1"
@@ -326,7 +326,7 @@ function MedicoDashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 {proximosAtendimentos.map((atendimento) => (
-                  <div key={atendimento.id} className="border rounded-lg p-3 hover:bg-gray-50">
+                  <div key={atendimento.id} className="border-b-1 border-b-gray-300 rounded-md p-3 hover:bg-blue-100">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-gray-900">{atendimento.nome}</p>
@@ -334,8 +334,8 @@ function MedicoDashboardPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-blue-600">{atendimento.horario}</p>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => verHistorico(atendimento.id)}
                           className="mt-1"

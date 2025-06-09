@@ -222,15 +222,9 @@ function AgendamentosPage() {
 
   if (loading) {
     return (
-<<<<<<< HEAD
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
-        <p className="ml-2 text-red-700">Carregando agendamentos...</p>
-=======
       <div className="flex flex-col justify-center items-center h-64 space-y-4">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
         <p className="text-purple-700 text-center">Carregando agendamentos...</p>
->>>>>>> main
       </div>
     );
   }
@@ -279,7 +273,7 @@ function AgendamentosPage() {
           {/* Botão de novo agendamento */}
           <button
             onClick={handleNewAppointment}
-            className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded"
+            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded"
           >
             Novo Agendamento
           </button>
@@ -293,7 +287,7 @@ function AgendamentosPage() {
             </label>
             <select
               id="statusFilter"
-              className="border border-red-300 rounded p-2 w-40"
+              className="border border-gray-400 rounded p-2 w-40"
               value={filteredStatus}
               onChange={(e) => setFilteredStatus(e.target.value as StatusAgendamento | '')}
             >
@@ -312,7 +306,7 @@ function AgendamentosPage() {
             </label>
             <select
               id="tipoFilter"
-              className="border border-red-300 rounded p-2 w-40"
+              className="border border-gray-400 rounded p-2 w-40"
               value={filteredTipo}
               onChange={(e) => setFilteredTipo(e.target.value as TipoAgendamento | '')}
             >
@@ -330,7 +324,7 @@ function AgendamentosPage() {
             </label>
             <select
               id="medicoFilter"
-              className="border border-red-300 rounded p-2 w-56"
+              className="border border-gray-400 rounded p-2 w-56"
               value={filteredMedicoId}
               onChange={(e) => setFilteredMedicoId(e.target.value ? +e.target.value : '')}
             >
@@ -391,7 +385,7 @@ function AgendamentosPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-red-200">
+            <tbody className="bg-white divide-y divide-purple-300">
               {filteredAgendamentos.length > 0 ? (
                 filteredAgendamentos.map((agendamento) => (
                   <tr key={agendamento.id}>
@@ -422,7 +416,7 @@ function AgendamentosPage() {
                       <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
                         <button
                           onClick={() => handleEditAppointment(agendamento.id)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                          className="bg-amber-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
                         >
                           Editar
                         </button>
@@ -430,7 +424,7 @@ function AgendamentosPage() {
                         {agendamento.status === StatusAgendamento.AGENDADO && (
                           <button
                             onClick={() => handleConfirmAppointment(agendamento.id)}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs"
+                            className="bg-emerald-500 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs"
                           >
                             Confirmar
                           </button>
@@ -441,7 +435,7 @@ function AgendamentosPage() {
                           <>
                             <button
                               onClick={() => handleCompleteAppointment(agendamento.id)}
-                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                              className="bg-indigo-500 hover:bg-indigo-700 text-white px-2 py-1 rounded text-xs"
                             >
                               Atendido
                             </button>
@@ -455,7 +449,7 @@ function AgendamentosPage() {
 
                             <button
                               onClick={() => handleCancelAppointment(agendamento.id)}
-                              className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs"
+                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
                             >
                               Cancelar
                             </button>

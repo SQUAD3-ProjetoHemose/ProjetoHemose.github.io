@@ -9,11 +9,7 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true, // Ignorar ESLint durante builds
-<<<<<<< HEAD
-  }
-=======
   },
->>>>>>> main
 };
 
 export default nextConfig; // Exportação padrão da configuração

@@ -111,7 +111,7 @@ function EnfermeiraDashboardPage() {
 
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white p-6 rounded-lg shadow-sm border-1 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-medium text-gray-600">Pacientes Internados</h2>
@@ -123,7 +123,7 @@ function EnfermeiraDashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white p-6 rounded-lg shadow-sm border-1 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-medium text-gray-600">Aguardando Triagem</h2>
@@ -135,7 +135,7 @@ function EnfermeiraDashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white p-6 rounded-lg shadow-sm border-1 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-medium text-gray-600">Medicamentos Pendentes</h2>
@@ -147,7 +147,7 @@ function EnfermeiraDashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="bg-white p-6 rounded-lg shadow-sm border-1 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-medium text-gray-600">Leitos Disponíveis</h2>
@@ -163,7 +163,7 @@ function EnfermeiraDashboardPage() {
         {/* Seção de Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Pacientes que Requerem Atenção */}
-          <div className="bg-white rounded-lg shadow-sm border">
+          <div className="bg-white rounded-lg border-1 border-gray-300">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Pacientes Prioritários</h2>
@@ -220,7 +220,7 @@ function EnfermeiraDashboardPage() {
           </div>
 
           {/* Medicamentos Urgentes */}
-          <div className="bg-white rounded-lg shadow-sm border">
+          <div className="bg-white rounded-lg shadow-sm border-1 border-gray-300">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Medicamentos Urgentes</h2>
@@ -292,10 +292,10 @@ function EnfermeiraDashboardPage() {
 
           <a
             href="/enfermeira/pacientes"
-            className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors group"
+            className="flex flex-col items-center p-4 bg-red-50 hover:bg-orange-100 rounded-lg transition-colors group"
           >
-            <Users className="h-8 w-8 text-orange-600 mb-2 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-orange-800">Lista Pacientes</span>
+            <Users className="h-8 w-8 text-orange-500 mb-2 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-orange-700">Lista Pacientes</span>
           </a>
         </div>
       </div>

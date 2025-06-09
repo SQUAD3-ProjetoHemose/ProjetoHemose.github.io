@@ -133,8 +133,8 @@ function MedicoPacientesPage() {
           size="sm"
         >
           <Users className="h-4 w-4" />
-          <span className="hidden sm:inline">Novo Paciente</span>
-          <span className="sm:hidden">Novo</span>
+          <span className="hidden lg:inline">Novo Paciente</span>
+          <span className="lg:hidden">Novo</span>
         </Button>
       </div>
 

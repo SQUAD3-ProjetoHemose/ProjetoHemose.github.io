@@ -145,15 +145,9 @@ function RecepcionistaDashboardPage() {
   // Exibe loader enquanto os dados estão carregando
   if (isLoading) {
     return (
-<<<<<<< HEAD
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
-        <p className="ml-2 text-red-700">Carregando dados...</p>
-=======
       <div className="flex flex-col justify-center items-center h-64 space-y-4">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
         <p className="ml-2 text-purple-700 text-center">Carregando dados do dashboard...</p>
->>>>>>> main
       </div>
     );
   }
@@ -210,25 +204,15 @@ function RecepcionistaDashboardPage() {
         <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-lg shadow-md">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
             <h2 className="text-lg font-semibold text-black">Fila de Espera</h2>
-<<<<<<< HEAD
-            <div className="flex space-x-2">
-              <button 
-                className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-800"
-=======
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
               <button
                 className="px-3 py-1 bg-purple-700 text-white rounded text-sm hover:bg-purple-800 w-full sm:w-auto"
->>>>>>> main
                 onClick={handleAtualizarFila}
                 disabled={isLoading}
               >
                 Atualizar
               </button>
-<<<<<<< HEAD
-              <button className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-800">
-=======
               <button className="px-3 py-1 bg-purple-700 text-white rounded text-sm hover:bg-purple-800 w-full sm:w-auto">
->>>>>>> main
                 Gerenciar Fila
               </button>
             </div>
@@ -261,42 +245,11 @@ function RecepcionistaDashboardPage() {
                   </th>
                 </tr>
               </thead>
-<<<<<<< HEAD
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filaEspera.map((paciente) => (
-                  <tr key={paciente.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-black">{paciente.nome}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black">{paciente.horario}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black">{paciente.tipo}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black">{paciente.medico}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${paciente.status === 'Aguardando' ? 'bg-red-100 text-black' :
-                          paciente.status === 'Triagem' ? 'bg-red-300 text-black' :
-                            paciente.status === 'Em Atendimento' ? 'bg-red-400 text-black' :
-                              'bg-red-100 text-black'
-                        }`}>
-                        {paciente.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-xs">
-                        Check-in
-                      </button>
-=======
               <tbody className="bg-white divide-y divide-purple-200">
                 {filaEspera.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       Nenhum paciente na fila de espera
->>>>>>> main
                     </td>
                   </tr>
                 ) : (
@@ -363,18 +316,6 @@ function RecepcionistaDashboardPage() {
           <h2 className="text-lg font-semibold text-black mb-4">Ações Rápidas</h2>
 
           <div className="space-y-3">
-<<<<<<< HEAD
-            <a href="/recepcionista/pacientes/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
-              Novo Paciente
-            </a>
-            <a href="/recepcionista/agendamentos/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
-              Novo Agendamento
-            </a>
-            <a href="/recepcionista/check-in" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
-              Check-in de Paciente
-            </a>
-            <a href="/recepcionista/acompanhantes/novo" className="block w-full text-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">
-=======
             <a
               href="/recepcionista/pacientes/novo"
               className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
@@ -397,7 +338,6 @@ function RecepcionistaDashboardPage() {
               href="/recepcionista/acompanhantes/novo"
               className="block w-full text-center bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded text-sm sm:text-base"
             >
->>>>>>> main
               Cadastrar Acompanhante
             </a>
           </div>
@@ -408,22 +348,13 @@ function RecepcionistaDashboardPage() {
               <input
                 type="text"
                 placeholder="Nome ou CPF do paciente"
-<<<<<<< HEAD
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 placeholder:text-[#333333]"
-=======
                 className="flex-1 px-3 py-2 border border-purple-300 rounded-l-md sm:rounded-r-none rounded-r-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 placeholder:text-[#333333] text-sm"
->>>>>>> main
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               />
-<<<<<<< HEAD
-              <button 
-                className="bg-gray-600 text-white px-4 py-2 rounded-r-md hover:bg-gray-700"
-=======
               <button
                 className="bg-purple-700 text-white px-4 py-2 rounded-r-md sm:rounded-l-none rounded-l-md hover:bg-purple-800 mt-2 sm:mt-0 text-sm"
->>>>>>> main
                 onClick={handleSearch}
                 disabled={!searchTerm.trim()}
               >
@@ -462,34 +393,11 @@ function RecepcionistaDashboardPage() {
                 </th>
               </tr>
             </thead>
-<<<<<<< HEAD
-            <tbody className="bg-white divide-y divide-red-200">
-              {proximosAgendamentos.map((agendamento) => (
-                <tr key={agendamento.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-black">{agendamento.data}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-black">{agendamento.horario}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-black">{agendamento.paciente}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-black">{agendamento.tipo}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-black">{agendamento.medico}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="text-black hover:text-gray-700">Editar</button>
-=======
             <tbody className="bg-white divide-y divide-purple-200">
               {proximosAgendamentos.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                     Nenhum agendamento futuro encontrado
->>>>>>> main
                   </td>
                 </tr>
               ) : (

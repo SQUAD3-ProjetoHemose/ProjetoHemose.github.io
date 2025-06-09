@@ -415,12 +415,8 @@ function NovoAgendamentoPage() {
                 name="data"
                 value={formData.data}
                 onChange={handleInputChange}
-<<<<<<< HEAD
-                className="border border-gray-300 rounded-md p-2 w-full focus:ring-gray-500 focus:border-gray-500"
-=======
                 className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
                 autoComplete="off"
->>>>>>> main
                 required
               />
             </div>
@@ -436,12 +432,8 @@ function NovoAgendamentoPage() {
                 name="horario"
                 value={formData.horario}
                 onChange={handleInputChange}
-<<<<<<< HEAD
-                className="border border-gray-300 rounded-md p-2 w-full focus:ring-gray-500 focus:border-gray-500"
-=======
                 className="border border-purple-300 rounded-md p-2 w-full focus:ring-purple-500 focus:border-purple-500"
                 autoComplete="off"
->>>>>>> main
                 required
               />
             </div>

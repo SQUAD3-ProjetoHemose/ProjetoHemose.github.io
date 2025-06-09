@@ -150,67 +150,6 @@ function AdminUsersPage() {
         </Button>
       </div>
 
-<<<<<<< HEAD
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="border-b border-gray-300">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => handleTabChange('todos')}
-                className={`${
-                  activeTab === 'todos'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-800 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => handleTabChange('medico')}
-                className={`${
-                  activeTab === 'medico'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Médicos
-              </button>
-              <button
-                onClick={() => handleTabChange('enfermeira')}
-                className={`${
-                  activeTab === 'enfermeira'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Enfermeiras
-              </button>
-              <button
-                onClick={() => handleTabChange('recepcionista')}
-                className={`${
-                  activeTab === 'recepcionista'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Recepcionistas
-              </button>
-            </nav>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={openCreateModal}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Adicionar Usuário
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center mt-8">
-              <p>Carregando...</p>
-=======
       {/* Filtros e busca */}
       <Card>
         <CardContent className="p-6">
@@ -225,7 +164,6 @@ function AdminUsersPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
->>>>>>> main
             </div>
           </div>
         </CardContent>
