@@ -74,7 +74,6 @@ export default function RecepcionistaLayout({ children }: RecepcionistaLayoutPro
     return pathname.startsWith(href);
   };
 
-  // Função para realizar logout e redirecionar para a página de login
   const handleLogout = () => {
     logout();
   };

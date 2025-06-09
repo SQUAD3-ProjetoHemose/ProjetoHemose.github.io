@@ -518,7 +518,7 @@ function PacienteDashboardPage() {
             ) : (
               <button
                 onClick={handleSalvarPaciente}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300 text-sm sm:text-base"
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300 text-sm sm:text-base"
                 aria-label="Cadastrar novo paciente"
               >
                 Cadastrar Paciente
@@ -549,14 +549,14 @@ function PacienteDashboardPage() {
                   <div className="mt-2 flex flex-col sm:flex-row gap-2">
                     <button 
                       onClick={() => iniciarEdicao(paciente)} 
-                      className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded transition duration-300"
+                      className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded transition duration-300"
                       aria-label={`Editar paciente ${paciente.nome}`}
                     >
                       Editar
                     </button>
                     <button 
                       onClick={() => handleExcluirPaciente(paciente.id)}
-                      className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-300"
+                      className="text-xs bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded transition duration-300"
                       aria-label={`Excluir paciente ${paciente.nome}`}
                     >
                       Excluir

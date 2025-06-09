@@ -149,12 +149,12 @@ function CheckInPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Nome do paciente"
-            className="border border-purple-300 rounded-md p-2 flex-grow focus:ring-purple-500 focus:border-purple-500"
+            className="border border-purple-400 rounded-md p-2 flex-grow focus:ring-purple-500 focus:border-purple-500"
           />
           <button
             onClick={handleSearch}
             disabled={isSearching || !searchTerm.trim()}
-            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded disabled:bg-purple-300"
+            className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded disabled:bg-gray-400"
           >
             {isSearching ? 'Buscando...' : 'Buscar'}
           </button>
@@ -162,7 +162,7 @@ function CheckInPage() {
 
         {/* Mensagens de erro ou sucesso */}
         {error && (
-          <div className="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+          <div className="mt-4 bg-red-100 border-l-4 border-amber-500 text-amber-700 p-4">
             <p>{error}</p>
           </div>
         )}
@@ -231,7 +231,7 @@ function CheckInPage() {
               <p className="text-gray-500">Nenhum paciente realizou check-in hoje.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-purple-200">
+                <table className="min-w-full divide-y divide-purple-300">
                   <thead className="bg-purple-50">
                     <tr>
                       <th

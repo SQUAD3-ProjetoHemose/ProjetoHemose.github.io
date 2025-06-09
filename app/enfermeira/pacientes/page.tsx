@@ -271,7 +271,7 @@ function PacientesPage() {
         </div>
 
         {/* Filtros e Busca */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border-1 border-gray-300 p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             {/* Busca */}
             <div className="flex-1">
@@ -388,7 +388,7 @@ function PacientesPage() {
             {pacientesFiltrados.map((paciente) => (
               <div
                 key={paciente.id}
-                className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                className="bg-white rounded-lg shadow-sm border-1 border-green-600 hover:shadow-md transition-shadow"
               >
                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">

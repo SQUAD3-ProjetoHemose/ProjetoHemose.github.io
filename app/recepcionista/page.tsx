@@ -219,8 +219,8 @@ function RecepcionistaDashboardPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-purple-200">
-              <thead className="bg-purple-50">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
                 <tr>
                   <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Paciente
@@ -370,8 +370,8 @@ function RecepcionistaDashboardPage() {
         <h2 className="text-lg font-semibold text-black mb-4">Próximos Agendamentos</h2>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-purple-200">
-            <thead className="bg-purple-50">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-100">
               <tr>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                   Data

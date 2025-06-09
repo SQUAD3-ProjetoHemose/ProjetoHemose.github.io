@@ -157,7 +157,7 @@ function MedicoAgendaPage() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="px-4 py-2 bg-blue-50 rounded-lg min-w-[200px] text-center">
-                <p className="font-medium text-blue-900">
+                <p className="font-medium text-blue-950">
                   {dataAtual.toLocaleDateString('pt-BR', {
                     weekday: 'long',
                     year: 'numeric',
@@ -229,9 +229,9 @@ function MedicoAgendaPage() {
               return (
                 <div
                   key={horario}
-                  className="flex items-center border rounded-lg p-3 hover:bg-gray-50"
+                  className="flex items-center border-1 border-gray-300 rounded-lg p-3 hover:bg-gray-50"
                 >
-                  <div className="w-20 text-sm font-medium text-gray-600">{horario}</div>
+                  <div className="w-20 text-sm font-medium text-gray-800">{horario}</div>
 
                   {agendamentoHorario ? (
                     <div className="flex-1 flex items-center justify-between">
